@@ -1,6 +1,12 @@
 # 腕上节律
 
-![腕上节律首页预览](docs/images/home-preview.png)
+| 健康首页 | 稳态呼吸训练 |
+| --- | --- |
+| ![健康首页](docs/images/home-preview.png) | ![稳态呼吸训练](docs/images/steady-training.png) |
+
+| 节奏拳训练 | 稳态训练结果 |
+| --- | --- |
+| ![节奏拳训练](docs/images/boxing-training.png) | ![稳态训练结果](docs/images/steady-result.png) |
 
 面向 openvela 手表的身心训练快应用。当前版本包含“稳态 60”和“节奏拳”两个模式：前者用心率与压力驱动 60 秒呼吸训练，后者用单腕加速度动作完成 30 秒节拍挑战。
 

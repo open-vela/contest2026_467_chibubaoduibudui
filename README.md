@@ -1,49 +1,64 @@
 # 腕上节律（Wrist Rhythm）
 
-![腕上节律首页预览](quickapp/wrist-rhythm/docs/images/home-preview.png)
+> 将健康数据转化为可立即参与的腕上呼吸训练与节拍运动。
+
+## 界面展示
+
+| 健康首页 | 稳态呼吸训练 |
+| --- | --- |
+| ![健康首页](quickapp/wrist-rhythm/docs/images/home-preview.png) | ![稳态呼吸训练](quickapp/wrist-rhythm/docs/images/steady-training.png) |
+
+| 节奏拳训练 | 稳态训练结果 |
+| --- | --- |
+| ![节奏拳训练](quickapp/wrist-rhythm/docs/images/boxing-training.png) | ![稳态训练结果](quickapp/wrist-rhythm/docs/images/steady-result.png) |
+
+以上图片来自 AIoT 模拟器验收画面，并裁切为纯应用界面。
 
 ## 一、作品简介
 
-腕上节律是一款面向 openvela 圆形手表的身心训练快应用。它把健康数据与腕部动作转换为两种短时训练：
+腕上节律是一款面向 openvela 圆形手表的身心训练快应用，包含两种一分钟内即可完成的体验：
 
-- **稳态 60**：根据心率、压力及变化趋势，提供 60 秒 4-2-4 或 4-2-6 呼吸训练，并展示训练前后变化。
-- **节奏拳**：通过加速度计识别腕部出拳动作，完成 30 秒节拍挑战；心率升高时会自动降低节拍速度。
+- **稳态 60**：读取心率、压力及变化趋势，提供 60 秒 4-2-4 或 4-2-6 呼吸训练，并在结束时展示训练前后变化。
+- **节奏拳**：通过加速度计识别腕部动作，完成 30 秒节拍挑战；心率升高时自动降低节拍速度。
 
-应用针对 480×480 圆形表盘和短视口设计，健康数据或加速度计不可用时仍可分别降级为离线呼吸训练和点击模拟模式。本作品仅用于放松训练，不用于疾病诊断或治疗。
+应用围绕 480×480 圆形表盘和短视口设计。健康数据或加速度计不可用时，会分别降级为离线呼吸训练和点击模拟模式，不因单项系统能力缺失而阻断核心体验。
 
 ## 二、选题方向
 
 **快应用 / 手表应用创新**。
 
-作品利用 openvela 快应用的健康数据与传感器能力，把被动显示健康指标扩展为可立即参与、可反馈结果的腕上训练体验。
+作品利用 openvela 快应用的健康服务、传感器和生命周期能力，把手表上的被动指标展示扩展为“状态提示—主动训练—结果反馈”的完整闭环。
 
-## 三、作品亮点
+## 三、核心亮点
 
-- 实时读取和订阅心率、压力，结合高值与上升趋势给出训练提示。
-- 在完整呼吸周期边界依据训练效果自适应调整呼吸节奏。
-- 基于真实经过时间的训练时钟，支持前后台暂停、资源释放与安全恢复。
-- 加速度突变识别、动作防抖、三级节拍评分、连击与心率自适应节奏。
-- 健康接口和传感器异常均有明确降级路径。
-- B1 棱镜夜光毛玻璃视觉体系，并针对圆屏安全区、紧凑尺寸和短视口适配。
-- 67 项自动化测试覆盖训练算法、运行时生命周期、组件契约与发布构建编排。
+- 实时读取和订阅心率、压力，结合高值与上升趋势给出训练建议。
+- 仅在完整呼吸周期边界调整节奏，避免训练过程发生突兀跳变。
+- 使用真实经过时间驱动倒计时，切入后台时暂停会话并释放健康订阅、传感器和计时器，返回前台后安全恢复。
+- 加速度突变识别、350 ms 动作防抖、三级节拍评分、连击统计与心率自适应节奏。
+- 对健康接口、订阅、加速度计和设备信息失败提供明确的异常处理与降级路径。
+- 使用青蓝静息能量与玫红运动能量组成棱镜夜光界面，并针对圆屏安全区、紧凑尺寸和短视口适配。
+- 67 项自动化测试覆盖训练算法、系统适配、页面生命周期、组件契约和发布构建编排。
 
 ## 四、目录结构
 
 ```text
 quickapp/wrist-rhythm/
-├── src/                  # 快应用源码、页面、组件和系统能力适配
-├── test/                 # 逻辑、生命周期、组件契约和发布测试
-├── scripts/              # 发布构建与图标优化工具
-├── docs/                 # 设计、实施记录和作品预览
-├── package.json          # Node.js 依赖和构建命令
-└── README.md             # 完整功能、接口及模拟器验收说明
-logs/                     # AI Coding 日志及提交格式说明
-artifacts/                # 可供评审安装的调试签名 RPK
+├── src/
+│   ├── manifest.json             # 手表设备、权限、系统能力和路由
+│   ├── common/                   # 应用图标
+│   └── pages/index/              # 页面编排、训练逻辑、系统适配和展示组件
+├── test/                         # 逻辑、生命周期、组件契约和发布测试
+├── scripts/                      # 发布构建与图标优化工具
+├── docs/                         # 设计记录、实施计划和界面图片
+├── package.json                  # 依赖与构建命令
+└── README.md                     # 详细功能、接口及模拟器验收说明
+artifacts/                        # 可供评审安装的调试签名 RPK
+logs/                             # AI Coding 日志与格式说明
 contest2026_467_chibubaoduibudui.xml
-                          # repo manifest 与快应用映射
+                                  # repo manifest 与快应用映射
 ```
 
-manifest 会把 `quickapp/wrist-rhythm/` 映射到 openvela 工作树中的：
+manifest 将作品映射到 openvela 工作树中的：
 
 ```text
 packages/apps/contest2026_467_wrist_rhythm
@@ -51,7 +66,7 @@ packages/apps/contest2026_467_wrist_rhythm
 
 ## 五、运行方式
 
-### 1. 拉取完整 openvela 工程
+### 1. 拉取完整工程
 
 ```bash
 repo init -u https://github.com/open-vela/contest2026_467_chibubaoduibudui \
@@ -59,9 +74,16 @@ repo init -u https://github.com/open-vela/contest2026_467_chibubaoduibudui \
 repo sync -c -j8
 ```
 
-### 2. 安装依赖并验证
+同步后，参赛仓库位于 `contest2026_467_chibubaoduibudui/`，其余 openvela 源码位于同一工作区外层。
 
-需要 Node.js 22 或更高版本，以及 AIoT IDE、`aiot-core` 和 `aiot-emulator` 1.7.22 或更高版本。
+### 2. 准备快应用环境
+
+需要：
+
+- Node.js 22 或更高版本
+- AIoT IDE
+- `aiot-core` 与 `aiot-emulator` 1.7.22 或更高版本
+- 模拟器镜像 `vela-miwear-watch-5.0(开发者大赛)`
 
 ```bash
 cd contest2026_467_chibubaoduibudui/quickapp/wrist-rhythm
@@ -70,32 +92,56 @@ npm test
 npm run build
 ```
 
-调试构建产物：
+调试包生成于：
 
 ```text
 dist/com.openvela.wristrhythm.debug.1.0.0.rpk
 ```
 
-仓库同时提交了 `artifacts/com.openvela.wristrhythm.debug.1.0.0.rpk` 供评审安装。正式发布包需配置由发布方管理的签名证书后运行 `npm run build:release`；仓库不包含私钥或分发凭据。
-
-### 3. 模拟器运行
+### 3. 在模拟器运行
 
 1. 使用 AIoT IDE 打开 `quickapp/wrist-rhythm/`。
 2. 新建并启动 `vela-miwear-watch-5.0(开发者大赛)` 模拟器。
-3. 编译并推送应用。
-4. 按[应用详细说明](quickapp/wrist-rhythm/README.md#模拟器验收)完成健康数据、呼吸训练、节奏拳、降级模式和圆屏布局验收。
+3. 选择该设备，编译并推送应用。
+4. 按[详细模拟器验收步骤](quickapp/wrist-rhythm/README.md#模拟器验收)检查健康数据、呼吸训练、节奏拳、结果页、后台恢复和降级模式。
+
+### 4. 发布构建
+
+```bash
+npm run build:release
+```
+
+发布构建启用 JSC、CSS 属性优化、PNG8 和移除 console。正式发布包需要发布方管理的签名证书；仓库不包含私钥或分发凭据。`artifacts/com.openvela.wristrhythm.debug.1.0.0.rpk` 使用工具链演示签名，仅供评审和模拟器验证。
 
 ## 六、AI Coding 使用说明
 
-本作品在需求拆解、架构设计、测试驱动开发、设备兼容性排查、圆屏界面迭代和发布流程加固中使用了 AI Coding：
+本作品在需求拆解、方案设计、编码、调试、测试和文档环节持续使用 AI Coding：
 
-- 先把健康订阅、训练时钟、运动识别和页面生命周期拆成可独立验证的模块。
-- 用自动化测试固定边界行为，再实现或调整功能，降低设备 API 与异步生命周期带来的回归风险。
-- 通过设计文档和实施计划记录圆屏视觉、安全区、动画兼容性与异常降级决策。
-- 对发布流程增加可注入工具链测试，防止旧产物被误当成新发布包。
+- 将健康订阅、训练时钟、动作识别和页面生命周期拆为职责单一、可独立验证的模块。
+- 先用测试固定倒计时边界、异步回调代际、资源释放、异常降级和组件装配行为，再实现或调整代码。
+- 通过设计文档与实施计划记录圆屏安全区、视觉系统、动画兼容性和运行时决策。
+- 结合 AIoT 模拟器截图检查首页、训练页和结果页，迭代圆屏布局与动效。
+- 为发布脚本加入可注入工具链测试，避免把旧 RPK 误认为本次构建产物。
 
-设计与实施记录位于 `quickapp/wrist-rhythm/docs/superpowers/`；由大赛采集器导出的完整对话日志应位于 `logs/<github_login>/`。
+设计和实施记录位于 `quickapp/wrist-rhythm/docs/superpowers/`，完整 AI Coding 对话日志位于 [`logs/inskr/`](logs/inskr/)。
 
-## 七、更多说明
+## 七、验证结果
 
-完整功能清单、接口兼容性、构建细节和逐项模拟器验收步骤见 [quickapp/wrist-rhythm/README.md](quickapp/wrist-rhythm/README.md)。
+```bash
+npm test
+```
+
+当前共 67 项测试，覆盖：
+
+- 稳态判定、呼吸阶段、训练结果、动作识别、评分与布局选择
+- 可暂停时钟、健康订阅状态、响应式写入与页面生命周期
+- 组件 props、事件、圆屏适配、动画兼容性和视觉作用域
+- 发布暂存、正式 RPK 识别、旧产物清理与工具链错误检测
+
+## 八、兼容性与免责声明
+
+加速度计使用官方 `@system.sensor.subscribeAccelerometer({ interval: 'game' })`。不支持该能力的设备会明确进入点击模拟模式，稳态呼吸训练不受影响。
+
+本应用只提供放松和运动训练体验，不用于疾病诊断或治疗，也不以单次健康读数替代专业医疗判断。
+
+更多实现细节见 [应用详细说明](quickapp/wrist-rhythm/README.md)。
