@@ -37,7 +37,7 @@
 - 加速度突变识别、350 ms 动作防抖、三级节拍评分、连击统计与心率自适应节奏。
 - 对健康接口、订阅、加速度计和设备信息失败提供明确的异常处理与降级路径。
 - 使用青蓝静息能量与玫红运动能量组成棱镜夜光界面，并针对圆屏安全区、紧凑尺寸和短视口适配。
-- 67 项自动化测试覆盖训练算法、系统适配、页面生命周期、组件契约和发布构建编排。
+- 72 项自动化测试覆盖训练算法、系统适配、页面生命周期、组件契约、发布构建编排和赛事提交契约。
 
 ## 四、目录结构
 
@@ -52,8 +52,13 @@ quickapp/wrist-rhythm/
 ├── docs/                         # 设计记录、实施计划和界面图片
 ├── package.json                  # 依赖与构建命令
 └── README.md                     # 详细功能、接口及模拟器验收说明
-artifacts/                        # 可供评审安装的调试签名 RPK
+artifacts/                        # 可供评审安装的 debug 与 release RPK
 logs/                             # AI Coding 日志与格式说明
+skills/                           # 可复用的赛事提交验收 Skill
+scripts/verify-contest-submission.js
+                                  # 赛事提交契约自动检查
+LICENSE                           # Apache License 2.0
+THIRD_PARTY_NOTICES.md            # 构建依赖与素材来源说明
 contest2026_467_chibubaoduibudui.xml
                                   # repo manifest 与快应用映射
 ```
@@ -113,6 +118,15 @@ npm run build:release
 
 发布构建启用 JSC、CSS 属性优化、PNG8 和移除 console。正式发布包需要发布方管理的签名证书；仓库不包含私钥或分发凭据。`artifacts/com.openvela.wristrhythm.debug.1.0.0.rpk` 使用工具链演示签名，仅供评审和模拟器验证。
 
+赛事仓同时提供生产模式构建产物：
+
+```text
+artifacts/com.openvela.wristrhythm.release.1.0.0.rpk
+SHA-256: BF61BBD90E4336188C6D2838CDE6187EBC3C5B95136B4DF9A2690B6384ACCD21
+```
+
+该包用于大赛评审和模拟器验证；面向应用商店或设备正式分发时，应由发布方使用其生产凭据重新签名。
+
 ## 六、AI Coding 使用说明
 
 本作品在需求拆解、方案设计、编码、调试、测试和文档环节持续使用 AI Coding：
@@ -125,18 +139,29 @@ npm run build:release
 
 设计和实施记录位于 `quickapp/wrist-rhythm/docs/superpowers/`，完整 AI Coding 对话日志位于 [`logs/inskr/`](logs/inskr/)。
 
+仓库同时沉淀了可复用的 [`verifying-openvela-watch-submission`](skills/verifying-openvela-watch-submission/SKILL.md) Skill，将赛事 manifest、源码工程、release 包、AI 日志、开源许可和交付材料检查固化为统一流程。
+
 ## 七、验证结果
 
 ```bash
 npm test
 ```
 
-当前共 67 项测试，覆盖：
+当前共 72 项测试，覆盖：
 
 - 稳态判定、呼吸阶段、训练结果、动作识别、评分与布局选择
 - 可暂停时钟、健康订阅状态、响应式写入与页面生命周期
 - 组件 props、事件、圆屏适配、动画兼容性和视觉作用域
 - 发布暂存、正式 RPK 识别、旧产物清理与工具链错误检测
+- Apache-2.0、赛事 manifest、release RPK、AI Skill 和日志目录提交契约
+
+在赛事仓根目录可额外执行静态合规检查：
+
+```bash
+node scripts/verify-contest-submission.js
+```
+
+`ERROR` 必须在最终 PR 前清零；作品介绍文档和不超过 5 分钟的演示视频若通过报名系统单独提交，会以 `WARN` 提醒人工确认。
 
 ## 八、兼容性与免责声明
 

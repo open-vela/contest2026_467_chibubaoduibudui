@@ -12,7 +12,7 @@
     "build:release": "node scripts/release-runner.js",
     "release": "npm run build:release",
     "watch": "aiot watch --open-nuttx",
-    "test:logic": "node test/steady.test.js && node test/runtime.test.js && node test/page-lifecycle.test.js && node test/component-contract.test.js && node test/release-runner.test.js",
+    "test:logic": "node test/steady.test.js && node test/runtime.test.js && node test/page-lifecycle.test.js && node test/component-contract.test.js && node test/release-runner.test.js && node ../../test/contest-compliance.test.js",
     "test": "npm run test:logic"
   },
   "devDependencies": {
