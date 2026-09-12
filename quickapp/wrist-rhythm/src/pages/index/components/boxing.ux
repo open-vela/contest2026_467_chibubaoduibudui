@@ -19,16 +19,16 @@
     <div class="fighter-slot fighter-slot-{{ screenSize }} fighter-slot-{{ screenViewport }}"></div>
     <div class="fighter-center-layer">
       <div class="fighter-stage fighter-stage-{{ screenSize }} fighter-stage-{{ screenViewport }} {{ boxingTargetClass }}" onclick="simulatePunch">
-        <div class="impact-wave impact-wave-{{ screenViewport }} impact-wave-one {{ boxingTargetClass }}-wave"></div>
-        <div class="impact-wave impact-wave-{{ screenViewport }} impact-wave-two {{ boxingTargetClass }}-wave"></div>
+        <div class="impact-wave impact-wave-{{ screenViewport }} impact-wave-one {{ boxingTargetClass }}-wave {{ boxingMotionClass }}-wave"></div>
+        <div class="impact-wave impact-wave-{{ screenViewport }} impact-wave-two {{ boxingTargetClass }}-wave {{ boxingMotionClass }}-wave"></div>
         <div class="fighter-anchor fighter-anchor-{{ screenViewport }}">
-          <div class="fighter fighter-{{ screenViewport }} {{ boxingTargetClass }}-fighter">
+          <div class="fighter fighter-{{ screenViewport }} {{ boxingTargetClass }}-fighter {{ boxingMotionClass }}-fighter">
             <div class="fighter-head fighter-head-{{ screenViewport }} {{ boxingTargetClass }}-head"></div>
             <div class="fighter-body fighter-body-{{ screenViewport }} {{ boxingTargetClass }}-body"></div>
             <div class="fighter-arm fighter-arm-{{ screenViewport }} fighter-arm-left fighter-arm-left-{{ screenViewport }} {{ boxingTargetClass }}-arm-left"></div>
-            <div class="fighter-arm fighter-arm-{{ screenViewport }} fighter-arm-right fighter-arm-right-{{ screenViewport }} {{ boxingTargetClass }}-arm-right"></div>
+            <div class="fighter-arm fighter-arm-{{ screenViewport }} fighter-arm-right fighter-arm-right-{{ screenViewport }} {{ boxingTargetClass }}-arm-right {{ boxingMotionClass }}-arm-right"></div>
             <div class="fighter-fist fighter-fist-{{ screenViewport }} fighter-fist-left fighter-fist-left-{{ screenViewport }} {{ boxingTargetClass }}-fist-left"></div>
-            <div class="fighter-fist fighter-fist-{{ screenViewport }} fighter-fist-right fighter-fist-right-{{ screenViewport }} {{ boxingTargetClass }}-fist-right"></div>
+            <div class="fighter-fist fighter-fist-{{ screenViewport }} fighter-fist-right fighter-fist-right-{{ screenViewport }} {{ boxingTargetClass }}-fist-right {{ boxingMotionClass }}-fist-right"></div>
             <div class="fighter-leg fighter-leg-{{ screenViewport }} fighter-leg-left fighter-leg-left-{{ screenViewport }} {{ boxingTargetClass }}-leg-left"></div>
             <div class="fighter-leg fighter-leg-{{ screenViewport }} fighter-leg-right fighter-leg-right-{{ screenViewport }} {{ boxingTargetClass }}-leg-right"></div>
           </div>
@@ -60,6 +60,7 @@ export default {
     boxingPrompt: { type: String, default: '准备' },
     boxingPaceLabel: { type: String, default: '' },
     boxingTargetClass: { type: String, default: 'target-waiting' },
+    boxingMotionClass: { type: String, default: 'motion-guard' },
     boxingFallback: { type: Boolean, default: false },
     boxingMessage: { type: String, default: '' },
   },
@@ -173,6 +174,10 @@ export default {
   border-color: #fb7185;
   border-radius: 70px;
   opacity: 0;
+  transform: scale(1);
+  transition-property: transform, opacity;
+  transition-duration: 80ms;
+  transition-timing-function: ease-out;
 }
 
 .impact-wave-two {
@@ -184,14 +189,17 @@ export default {
 }
 
 .target-hit-wave {
-  animation-name: impact-expand;
-  animation-duration: 500ms;
-  animation-timing-function: ease-out;
-  animation-iteration-count: 1;
+  border-color: #fb7185;
 }
 
-.impact-wave-two.target-hit-wave {
-  animation-delay: 90ms;
+.motion-impact-wave {
+  opacity: 0.8;
+  transform: scale(0.62);
+}
+
+.motion-recover-wave {
+  opacity: 0;
+  transform: scale(1.08);
 }
 
 .fighter-anchor {
@@ -207,10 +215,9 @@ export default {
   width: 104px;
   height: 164px;
   transform-origin: center center;
-  animation-name: fighter-enter;
-  animation-duration: 420ms;
-  animation-timing-function: ease-out;
-  animation-iteration-count: 1;
+  transition-property: transform, opacity;
+  transition-duration: 80ms;
+  transition-timing-function: ease-in-out;
 }
 
 .fighter-head {
@@ -246,7 +253,7 @@ export default {
   background-color: #fb7185;
   transform-origin: center center;
   transition-property: transform, background-color, opacity;
-  transition-duration: 280ms;
+  transition-duration: 80ms;
   transition-timing-function: ease-in-out;
 }
 
@@ -271,7 +278,7 @@ export default {
   background-color: #7f2d4d;
   transform-origin: center center;
   transition-property: transform, opacity, background-color;
-  transition-duration: 280ms;
+  transition-duration: 80ms;
   transition-timing-function: ease-in-out;
 }
 
@@ -313,21 +320,6 @@ export default {
   transform: scale(1.16);
 }
 
-.target-active-fighter {
-  animation-name: fighter-ready;
-  animation-duration: 360ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-.target-hit-fighter {
-  animation-name: fighter-strike;
-  animation-duration: 460ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-}
-
 .target-hit-arm-right {
   background-color: #fb7185;
   transform: translateX(24px) rotate(-8deg) scaleX(1.22);
@@ -340,63 +332,28 @@ export default {
 
 .target-missed-fighter {
   opacity: 0.62;
-  animation-name: fighter-miss;
-  animation-duration: 360ms;
-  animation-iteration-count: 1;
 }
 
-@keyframes fighter-enter {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
+.motion-guard-fighter { transform: scale(1); opacity: 1; }
+.motion-windup-fighter { transform: scale(0.96); opacity: 0.9; }
+.motion-strike-fighter { transform: scale(1.06); opacity: 1; }
+.motion-impact-fighter { transform: scale(1.08); opacity: 1; }
+.motion-recoil-fighter { transform: scale(0.94); opacity: 0.58; }
+.motion-recover-fighter { transform: scale(1); opacity: 1; }
 
-@keyframes fighter-enter-short {
-  0% { transform: scale(1); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
+.motion-guard-arm-right { transform: rotate(-28deg); }
+.motion-windup-arm-right { transform: rotate(-48deg) scaleX(1.08); }
+.motion-strike-arm-right,
+.motion-impact-arm-right { transform: translateX(24px) rotate(-8deg) scaleX(1.22); }
+.motion-recoil-arm-right { transform: rotate(-60deg) scaleX(0.9); }
+.motion-recover-arm-right { transform: translateX(8px) rotate(-18deg) scaleX(1.04); }
 
-@keyframes fighter-ready {
-  0% { transform: scale(1); opacity: 1; }
-  45% { transform: scale(0.96); opacity: 0.88; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-ready-short {
-  0% { transform: scale(1); opacity: 1; }
-  45% { transform: scale(1); opacity: 0.88; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-strike {
-  0% { transform: scale(0.96); opacity: 0.86; }
-  35% { transform: scale(0.98); opacity: 0.94; }
-  68% { transform: scale(1.06); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-strike-short {
-  0% { transform: scale(1); opacity: 0.86; }
-  35% { transform: scale(1); opacity: 0.94; }
-  68% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-miss {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.94); opacity: 0.55; }
-  100% { transform: scale(1); opacity: 0.72; }
-}
-
-@keyframes fighter-miss-short {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1); opacity: 0.55; }
-  100% { transform: scale(1); opacity: 0.72; }
-}
-
-@keyframes impact-expand {
-  0% { opacity: 0.8; transform: scale(0.55); }
-  100% { opacity: 0; transform: scale(1.08); }
-}
+.motion-guard-fist-right { transform: scale(1); }
+.motion-windup-fist-right { transform: translateX(-3px) scale(1.12); }
+.motion-strike-fist-right,
+.motion-impact-fist-right { transform: translateX(30px) scale(1.25); }
+.motion-recoil-fist-right { transform: translateX(-5px) scale(0.92); }
+.motion-recover-fist-right { transform: translateX(10px) scale(1.08); }
 
 .boxing-prompt {
   margin-top: 6px;
@@ -578,25 +535,17 @@ export default {
   transform: translateX(17px) scale(1.25);
 }
 
-.fighter.fighter-short {
-  animation-name: fighter-enter-short;
-  animation-iteration-count: 1;
-}
+.motion-windup-fighter.fighter-short { transform: scale(1); }
+.motion-strike-fighter.fighter-short { transform: scale(1); }
+.motion-impact-fighter.fighter-short { transform: scale(1); }
+.motion-recoil-fighter.fighter-short { transform: scale(1); }
+.motion-recover-fighter.fighter-short { transform: scale(1); }
 
-.target-active-fighter.fighter-short {
-  animation-name: fighter-ready-short;
-  animation-iteration-count: 1;
-}
+.motion-strike-arm-right.fighter-arm-right-short,
+.motion-impact-arm-right.fighter-arm-right-short { transform: translateX(14px) rotate(-8deg) scaleX(1.22); }
 
-.target-hit-fighter.fighter-short {
-  animation-name: fighter-strike-short;
-  animation-iteration-count: 1;
-}
-
-.target-missed-fighter.fighter-short {
-  animation-name: fighter-miss-short;
-  animation-iteration-count: 1;
-}
+.motion-strike-fist-right.fighter-fist-right-short,
+.motion-impact-fist-right.fighter-fist-right-short { transform: translateX(17px) scale(1.25); }
 
 .impact-wave-short {
   display: none;

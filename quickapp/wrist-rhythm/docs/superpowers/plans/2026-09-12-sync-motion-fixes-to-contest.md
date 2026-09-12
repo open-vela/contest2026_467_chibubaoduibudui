@@ -4,7 +4,7 @@
 
 **Goal:** Ensure the contest branch contains the current steady-60 breathing and Rhythm Boxing centering/smoothness fixes, then publish and validate a fresh release RPK.
 
-**Architecture:** Treat the root `main` checkout as the source of the reviewed UI fixes and `codex/contest-compliance` as the contest submission workspace. Preserve the target branch's contest-specific packaging and compliance files; only synchronize the two components and their contract coverage when content differs, then build in `quickapp/wrist-rhythm` and publish the exact generated release RPK to the root `artifacts/` directory.
+**Architecture:** Treat the root `main` checkout as the starting point for the reviewed UI fixes and `codex/contest-compliance` as the contest submission workspace. Preserve the target branch's contest-specific packaging and compliance files, then harden the animations for the AIOTJS device runtime with JS-driven phase classes before publishing the exact generated release RPK to the root `artifacts/` directory.
 
 **Tech Stack:** openvela Quick App `.ux`, Node.js 24, AIoT Toolkit 2.0.5, Node test runner scripts.
 
@@ -27,23 +27,27 @@
 - Source: `test/component-contract.test.js`
 - Target: `quickapp/wrist-rhythm/src/pages/index/components/breathing.ux`
 - Target: `quickapp/wrist-rhythm/src/pages/index/components/boxing.ux`
+- Target: `quickapp/wrist-rhythm/src/pages/index/steady.js`
+- Target: `quickapp/wrist-rhythm/src/pages/index/boxing.js`
+- Target: `quickapp/wrist-rhythm/src/pages/index/index.ux`
 - Target: `quickapp/wrist-rhythm/test/component-contract.test.js`
+- Target: `quickapp/wrist-rhythm/test/steady.test.js`
 
 **Interfaces:**
 - Consumes: reviewed working-tree implementations and component contracts.
-- Produces: contest quick-app sources with equivalent normalized text content.
+- Produces: contest quick-app sources with equivalent behavior and a device-runtime-compatible motion implementation.
 
 - [x] **Step 1: Compare source and target while ignoring line-ending differences**
 
 Run `git diff --no-index --ignore-space-at-eol` for each source/target pair.
 
-Expected: no semantic differences; if differences exist, copy only these three reviewed files into their mapped target paths.
+Expected: preserve the reviewed layout while replacing device-rejected CSS keyframes with testable JS-driven visual phases where simulator evidence requires it.
 
 - [x] **Step 2: Run the component contract test**
 
 Run: `node test/component-contract.test.js`
 
-Expected: breathing and boxing contracts pass, including centered outer-layer breathing, visible scale/opacity range, full-screen fighter centering, short-viewport pixel geometry, and 280/460 ms easing cadence.
+Expected: breathing and boxing contracts pass, including a fixed core on regular/compact/short layouts, visible ring scale/opacity range, full-screen fighter centering, short-viewport pixel geometry, and phase transitions short enough to complete within each JS motion window.
 
 ### Task 2: Build and publish the release RPK
 

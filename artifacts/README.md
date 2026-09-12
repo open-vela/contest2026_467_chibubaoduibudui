@@ -7,8 +7,8 @@
 
 ```text
 文件：com.openvela.wristrhythm.release.1.0.0.rpk
-大小：49,153 bytes
-SHA-256：ADEA1DC175F9D076D2BA99BFCF793098F20FA3286B1440CFB0F6715D845B8B8A
+大小：52,184 bytes
+SHA-256：3A7D22528D2F1F3B52C7C969CC5C90491459A0229969781926612A07C0097ACD
 工具链：AIoT Toolkit 2.0.5 / Node.js 24.19.0 / Windows x64
 命令：npm run build:release
 参数：production + JSC + optimize-css-attr + image-png8 + drop-console

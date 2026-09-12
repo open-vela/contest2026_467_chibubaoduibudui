@@ -21,7 +21,7 @@ const contracts = [
     tag: 'breathing-view',
     props: [
       'screenSize', 'screenViewport', 'remainingText',
-      'breathPhase', 'breathRhythmClass', 'phaseLabel', 'patternLabel',
+      'breathPhase', 'breathRhythmClass', 'breathVisualClass', 'phaseLabel', 'patternLabel',
     ],
     events: { stopTraining: 'stopTraining' },
     parentEvents: { 'onstop-training': 'stopTraining' },
@@ -43,7 +43,7 @@ const contracts = [
     props: [
       'screenSize', 'screenViewport', 'boxingRemainingText',
       'boxingScoreText', 'boxingStreakText', 'boxingComboClass', 'boxingPrompt', 'boxingPaceLabel',
-      'boxingTargetClass', 'boxingFallback', 'boxingMessage',
+      'boxingTargetClass', 'boxingMotionClass', 'boxingFallback', 'boxingMessage',
     ],
     events: { simulatePunch: 'simulatePunch', stopBoxing: 'stopBoxing' },
     parentEvents: { 'onsimulate-punch': 'simulatePunch', 'onstop-boxing': 'stopBoxing' },
@@ -298,53 +298,31 @@ test('呼吸阶段同步驱动外环与呼吸核心', () => {
   const template = templateSource(componentSource('breathing.ux'));
 
   assert(attributesForClass(template, 'breath-halo').class.includes('{{ breathPhase }}'));
-  assert(attributesForClass(template, 'breath-orb').class.includes('{{ breathPhase }}'));
+  assert(attributesForClass(template, 'orb-core').class.includes('{{ breathPhase }}-core'));
 });
 
-test('呼吸球三层均由呼吸阶段驱动且文字不参与缩放', () => {
+test('呼吸舞台只保留动态呼吸圈与固定核心且文字不参与缩放', () => {
   const template = templateSource(componentSource('breathing.ux'));
   assert(attributesForClass(template, 'breath-halo').class.includes('{{ breathPhase }}'));
-  assert(attributesForClass(template, 'breath-orb').class.includes('{{ breathPhase }}'));
   assert(attributesForClass(template, 'orb-core').class.includes('{{ breathPhase }}-core'));
+  assert(attributesForClass(template, 'orb-core').class.includes('orb-core-{{ screenSize }}'));
+  assert(attributesForClass(template, 'orb-core').class.includes('orb-core-{{ screenViewport }}'));
+  assert(/<div class="breath-halo[^>]*><\/div>\s*<div class="orb-core/.test(template));
+  assert(!template.includes('breath-orb'));
   assert(!attributesForClass(template, 'phase-label').class.includes('breathPhase'));
 });
 
-test('呼吸球首次吸气即可播放且动画时长与 4-2-4 / 4-2-6 节奏一致', () => {
+test('呼吸球使用设备可执行的离散进度类和平滑过渡', () => {
   const source = componentSource('breathing.ux');
   const template = templateSource(source);
 
   const halo = styleDeclarations(source, '.breath-halo');
-  assert(attributesForClass(template, 'breath-halo').class.includes('{{ breathRhythmClass }}'));
-  assert.strictEqual(halo['animation-name'], 'halo-breathe-standard');
-  assert.strictEqual(halo['animation-duration'], '10000ms');
-  assert.strictEqual(halo['animation-iteration-count'], 'infinite');
-  assert.strictEqual(styleDeclarations(source, '.breath-halo.rhythm-calming')['animation-name'], 'halo-breathe-calming');
-  assert.strictEqual(styleDeclarations(source, '.breath-halo.rhythm-calming')['animation-duration'], '12000ms');
-  for (const phase of ['inhale', 'hold', 'exhale']) {
-    assert.strictEqual(styleDeclarations(source, `.breath-halo.${phase}`)['animation-name'], undefined);
-  }
-
-  const orbAttributes = attributesForClass(template, 'breath-orb');
-  assert(orbAttributes.class.includes('{{ breathRhythmClass }}'));
-  for (const [phase, duration] of [['inhale', '4000ms'], ['hold', '2000ms'], ['exhale', '4000ms']]) {
-    const declarations = styleDeclarations(source, `.breath-orb.${phase}`);
-    assert.strictEqual(declarations['animation-duration'], duration);
-    assert.strictEqual(declarations['animation-iteration-count'], '1');
-  }
-  const calmingExhale = styleDeclarations(source, '.breath-orb.rhythm-calming.exhale');
-  assert.strictEqual(calmingExhale['animation-duration'], '6000ms');
-
-  assert(!styleDeclarations(source, '.breath-halo')['transition-property']);
-  assert(!styleDeclarations(source, '.breath-orb')['transition-property']);
-  assert(attributesForClass(template, 'orb-core').class.includes('{{ breathRhythmClass }}'));
-  for (const [phase, duration] of [['inhale-core', '4000ms'], ['hold-core', '2000ms'], ['exhale-core', '4000ms']]) {
-    const declarations = styleDeclarations(source, `.${phase}`);
-    assert.strictEqual(declarations['animation-duration'], duration);
-    assert.strictEqual(declarations['animation-iteration-count'], '1');
-  }
-  const calmingCoreExhale = styleDeclarations(source, '.exhale-core.rhythm-calming');
-  assert.strictEqual(calmingCoreExhale['animation-duration'], '6000ms');
-  assert.strictEqual(calmingCoreExhale['animation-iteration-count'], undefined);
+  assert(attributesForClass(template, 'breath-halo').class.includes('{{ breathVisualClass }}'));
+  assert.strictEqual(halo['transition-property'], 'width, height, opacity');
+  assert.strictEqual(halo['transition-duration'], '140ms');
+  assert.strictEqual(halo['transition-timing-function'], 'linear');
+  assert(!source.includes('@keyframes'));
+  assert(!source.includes('animation-name'));
 });
 
 test('稳态 60 使用青蓝玻璃且动画不推动文字', () => {
@@ -353,48 +331,52 @@ test('稳态 60 使用青蓝玻璃且动画不推动文字', () => {
 
   assert.strictEqual(styleDeclarations(source, '.orb-shell')['background-color'], '#0d1630');
   assert.strictEqual(styleDeclarations(source, '.breath-halo')['border-color'], '#247f96');
-  assert.strictEqual(styleDeclarations(source, '.breath-orb')['background-color'], undefined);
+  assert.strictEqual(styleDeclarations(source, '.breath-halo')['background-color'], '#102944');
   assert.strictEqual(styleDeclarations(source, '.orb-core')['background-color'], '#a5f3fc');
   assert.strictEqual(styleDeclarations(source, '.phase-label').color, '#f8fafc');
   assert(!attributesForClass(template, 'phase-label').class.includes('breathPhase'));
   assert(!attributesForClass(template, 'remaining').class.includes('breathPhase'));
 });
 
-test('呼吸动画只缩放外层并始终围绕舞台中心运动', () => {
+test('呼吸动画缩放外层光晕但将核心固定在舞台圆心', () => {
   const source = componentSource('breathing.ux');
   const shell = styleDeclarations(source, '.orb-shell');
+  const core = styleDeclarations(source, '.orb-core');
 
   assert.strictEqual(shell['justify-content'], 'center');
   assert.strictEqual(shell['align-items'], 'center');
-  assert.strictEqual(styleDeclarations(source, '.breath-halo')['transform-origin'], 'center center');
-  assert(/\btransform\s*:/.test(keyframeSource(source, 'halo-breathe-standard')));
-  assert(/\btransform\s*:/.test(keyframeSource(source, 'halo-breathe-calming')));
-
-  for (const animationName of [
-    'orb-inhale', 'orb-hold', 'orb-exhale',
-    'core-breathe', 'core-hover', 'core-release',
-  ]) {
-    assert(!/\btransform\s*:/.test(keyframeSource(source, animationName)), `${animationName}:nested-scale`);
-  }
-
-  for (const phase of ['inhale', 'hold', 'exhale']) {
-    assert.strictEqual(styleDeclarations(source, `.breath-orb.${phase}`)['background-color'], undefined);
-  }
+  assert.strictEqual(shell.position, 'relative');
+  assert.strictEqual(styleDeclarations(source, '.breath-halo.breath-step-0').width, '121px');
+  assert.strictEqual(styleDeclarations(source, '.breath-halo.breath-step-10').width, '220px');
+  assert.strictEqual(core.position, 'absolute');
+  assert.strictEqual(core.left, '106px');
+  assert.strictEqual(core.top, '106px');
+  assert.strictEqual(core.width, '38px');
+  assert.strictEqual(core.height, '38px');
+  assert.strictEqual(core['transition-property'], 'opacity, background-color');
+  assert.strictEqual(styleDeclarations(source, '.orb-core-compact').left, '96px');
+  assert.strictEqual(styleDeclarations(source, '.orb-core-compact').top, '96px');
+  assert.strictEqual(styleDeclarations(source, '.orb-core-short').left, '46px');
+  assert.strictEqual(styleDeclarations(source, '.orb-core-short').top, '46px');
+  assert.strictEqual(styleDeclarations(source, '.orb-core.breath-step-0').width, undefined);
+  assert.strictEqual(styleDeclarations(source, '.orb-core.breath-step-10').width, undefined);
+  assert.strictEqual(styleDeclarations(source, '.orb-core.breath-step-0').opacity, '0.68');
+  assert.strictEqual(styleDeclarations(source, '.orb-core.breath-step-10').opacity, '1');
+  assert(!source.includes('transform-origin'));
 });
 
 test('稳态呼吸在设备上具有清晰可见的收缩与明暗变化', () => {
   const source = componentSource('breathing.ux');
-
-  for (const animationName of ['halo-breathe-standard', 'halo-breathe-calming']) {
-    const frames = keyframeSource(source, animationName);
-    const scales = [...frames.matchAll(/scale\((\d*\.?\d+)\)/g)].map((match) => Number(match[1]));
-    const opacities = [...frames.matchAll(/opacity\s*:\s*(\d*\.?\d+)/g)].map((match) => Number(match[1]));
-
-    assert(scales.length >= 2, `${animationName}:scale-frames`);
-    assert(opacities.length >= 2, `${animationName}:opacity-frames`);
-    assert(Math.max(...scales) - Math.min(...scales) >= 0.4, `${animationName}:visible-scale-range`);
-    assert(Math.max(...opacities) - Math.min(...opacities) >= 0.45, `${animationName}:visible-opacity-range`);
+  const scales = [];
+  const opacities = [];
+  for (let step = 0; step <= 10; step += 1) {
+    const declarations = styleDeclarations(source, `.breath-halo.breath-step-${step}`);
+    scales.push(Number(declarations.width.replace('px', '')) / 220);
+    opacities.push(Number(declarations.opacity));
   }
+  assert.strictEqual(scales.length, 11);
+  assert(Math.max(...scales) - Math.min(...scales) >= 0.4);
+  assert(Math.max(...opacities) - Math.min(...opacities) >= 0.45);
 });
 
 test('节奏拳使用可点击线框人物并绑定 B1 节拍状态', () => {
@@ -405,6 +387,7 @@ test('节奏拳使用可点击线框人物并绑定 B1 节拍状态', () => {
 
   assert.strictEqual(stage.onclick, 'simulatePunch');
   assert(stage.class.includes('{{ boxingTargetClass }}'));
+  assert(template.includes('{{ boxingTargetClass }}-fighter {{ boxingMotionClass }}-fighter'));
   for (const part of [
     'fighter-head', 'fighter-body', 'fighter-arm-left', 'fighter-arm-right',
     'fighter-fist-left', 'fighter-fist-right', 'fighter-leg-left', 'fighter-leg-right',
@@ -443,12 +426,14 @@ test('节奏拳人物以舞台中心为锚点并使用完整的蓄力出拳回�
   assert.strictEqual(stage['justify-content'], 'center');
   assert.strictEqual(stage['align-items'], 'center');
   assert.strictEqual(styleDeclarations(source, '.fighter')['transform-origin'], 'center center');
-  assert.strictEqual(arm['transition-duration'], '280ms');
+  assert.strictEqual(styleDeclarations(source, '.fighter')['transition-duration'], '80ms');
+  assert.strictEqual(arm['transition-duration'], '80ms');
   assert.strictEqual(arm['transition-timing-function'], 'ease-in-out');
-  assert.strictEqual(fist['transition-duration'], '280ms');
+  assert.strictEqual(fist['transition-duration'], '80ms');
   assert.strictEqual(fist['transition-timing-function'], 'ease-in-out');
-  assert.strictEqual(styleDeclarations(source, '.target-active-fighter')['animation-name'], 'fighter-ready');
-  assert.strictEqual(styleDeclarations(source, '.target-hit-fighter')['animation-duration'], '460ms');
+  assert.strictEqual(styleDeclarations(source, '.motion-windup-fighter').transform, 'scale(0.96)');
+  assert.strictEqual(styleDeclarations(source, '.motion-strike-fighter').transform, 'scale(1.06)');
+  assert.strictEqual(styleDeclarations(source, '.motion-recover-fighter').transform, 'scale(1)');
 });
 
 test('节奏拳人物层以整个圆屏为参照固定在屏幕中央', () => {
@@ -475,12 +460,6 @@ test('节奏拳短视口使用实际像素尺寸并保持人物几何中心', ()
   const fighter = styleDeclarations(source, '.fighter');
   const shortFighter = styleDeclarations(source, '.fighter-short');
   const shortAnchor = styleDeclarations(source, '.fighter-anchor-short');
-  const shortAnimations = [
-    ['.fighter.fighter-short', 'fighter-enter-short'],
-    ['.target-active-fighter.fighter-short', 'fighter-ready-short'],
-    ['.target-hit-fighter.fighter-short', 'fighter-strike-short'],
-    ['.target-missed-fighter.fighter-short', 'fighter-miss-short'],
-  ];
 
   assert(template.includes('class="fighter-anchor fighter-anchor-{{ screenViewport }}"'));
   assert.strictEqual(fighter.position, 'absolute');
@@ -494,38 +473,14 @@ test('节奏拳短视口使用实际像素尺寸并保持人物几何中心', ()
   assert.strictEqual(styleDeclarations(source, '.fighter-head-short').width, '20px');
   assert.strictEqual(styleDeclarations(source, '.fighter-body-short').height, '38px');
 
-  for (const [selector, animationName] of shortAnimations) {
-    const declarations = styleDeclarations(source, selector);
-    assert.strictEqual(declarations['animation-name'], animationName);
-    assert.strictEqual(declarations['animation-iteration-count'], '1');
-    const frames = [...keyframeSource(source, animationName).matchAll(/\d+%\s*\{([^}]*)\}/g)];
-    assert(frames.length > 0, `${animationName}:frames`);
-    for (const frame of frames) {
-      const properties = frame[1]
-        .split(';')
-        .map((declaration) => declaration.trim())
-        .filter(Boolean)
-        .map((declaration) => declaration.slice(0, declaration.indexOf(':')).trim());
-      assert(properties.every((property) => ['transform', 'opacity'].includes(property)), `${animationName}:properties`);
-      assert(/transform:[^;]*scale\(1\)/.test(frame[1]), `${animationName}:scale`);
-    }
-  }
+  assert.strictEqual(styleDeclarations(source, '.motion-windup-fighter.fighter-short').transform, 'scale(1)');
+  assert.strictEqual(styleDeclarations(source, '.motion-strike-fighter.fighter-short').transform, 'scale(1)');
 });
 
-test('节奏拳关键帧避开 AIoT 运行时不兼容的位移与旋转', () => {
+test('节奏拳不依赖设备拒绝执行的 CSS 关键帧', () => {
   const source = componentSource('boxing.ux');
-  const animationNames = [
-    'fighter-enter', 'fighter-enter-short',
-    'fighter-ready', 'fighter-ready-short',
-    'fighter-strike', 'fighter-strike-short',
-    'fighter-miss', 'fighter-miss-short',
-    'impact-expand',
-  ];
-
-  for (const animationName of animationNames) {
-    const frames = keyframeSource(source, animationName);
-    assert(!/\b(?:translate(?:X|Y)?|rotate)\s*\(/.test(frames), `${animationName}:unsupported-transform`);
-  }
+  assert(!source.includes('@keyframes'));
+  assert(!source.includes('animation-name'));
 });
 
 test('节奏拳人物与冲击波动画不得无限循环', () => {

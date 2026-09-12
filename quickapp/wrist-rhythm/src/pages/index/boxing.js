@@ -55,6 +55,22 @@ function beatIntervalForHeartRate(heartRate) {
   return 1400;
 }
 
+function motionClassAt(mode, elapsedMs) {
+  const elapsed = Math.max(0, finite(elapsedMs) ? elapsedMs : 0);
+  if (mode === 'cue') {
+    if (elapsed < 90) return 'motion-windup';
+    if (elapsed < 220) return 'motion-strike';
+    if (elapsed < HIT_WINDOW_MS) return 'motion-recover';
+  } else if (mode === 'hit') {
+    if (elapsed < 140) return 'motion-impact';
+    if (elapsed < 360) return 'motion-recover';
+  } else if (mode === 'miss') {
+    if (elapsed < 140) return 'motion-recoil';
+    if (elapsed < 360) return 'motion-recover';
+  }
+  return 'motion-guard';
+}
+
 function createStats() {
   return { score: 0, hits: 0, targets: 0, streak: 0, maxStreak: 0 };
 }
@@ -88,6 +104,7 @@ module.exports = {
   createPunchDetector,
   scorePunch,
   beatIntervalForHeartRate,
+  motionClassAt,
   createStats,
   recordHit,
   recordMiss,

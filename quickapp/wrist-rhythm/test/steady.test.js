@@ -69,6 +69,16 @@ test('标准呼吸周期的阶段边界准确', () => {
   assert.strictEqual(steady.phaseAt(10000, pattern).phase, 'inhale');
 });
 
+test('呼吸视觉进度在吸气时展开、停留时保持、呼气时收拢', () => {
+  assert.strictEqual(steady.breathVisualClass({ phase: 'inhale', progress: 0 }), 'breath-step-0');
+  assert.strictEqual(steady.breathVisualClass({ phase: 'inhale', progress: 0.5 }), 'breath-step-5');
+  assert.strictEqual(steady.breathVisualClass({ phase: 'inhale', progress: 0.99 }), 'breath-step-10');
+  assert.strictEqual(steady.breathVisualClass({ phase: 'hold', progress: 0.5 }), 'breath-step-10');
+  assert.strictEqual(steady.breathVisualClass({ phase: 'exhale', progress: 0 }), 'breath-step-10');
+  assert.strictEqual(steady.breathVisualClass({ phase: 'exhale', progress: 0.5 }), 'breath-step-5');
+  assert.strictEqual(steady.breathVisualClass({ phase: 'exhale', progress: 0.99 }), 'breath-step-0');
+});
+
 test('60 秒到达完成态且不会继续循环', () => {
   assert.deepStrictEqual(steady.phaseAt(60000, steady.PATTERNS.calming), {
     phase: 'complete',
@@ -148,6 +158,21 @@ test('心率升高时降低节拍速度', () => {
   assert.strictEqual(boxing.beatIntervalForHeartRate(119), 1000);
   assert.strictEqual(boxing.beatIntervalForHeartRate(120), 1200);
   assert.strictEqual(boxing.beatIntervalForHeartRate(150), 1400);
+});
+
+test('节奏拳每次提示都经过蓄力、出拳和回位三个可见姿势', () => {
+  assert.strictEqual(boxing.motionClassAt('cue', 0), 'motion-windup');
+  assert.strictEqual(boxing.motionClassAt('cue', 80), 'motion-windup');
+  assert.strictEqual(boxing.motionClassAt('cue', 100), 'motion-strike');
+  assert.strictEqual(boxing.motionClassAt('cue', 170), 'motion-strike');
+  assert.strictEqual(boxing.motionClassAt('cue', 240), 'motion-recover');
+  assert.strictEqual(boxing.motionClassAt('cue', 300), 'motion-recover');
+  assert.strictEqual(boxing.motionClassAt('cue', 350), 'motion-guard');
+  assert.strictEqual(boxing.motionClassAt('hit', 0), 'motion-impact');
+  assert.strictEqual(boxing.motionClassAt('hit', 180), 'motion-recover');
+  assert.strictEqual(boxing.motionClassAt('miss', 0), 'motion-recoil');
+  assert.strictEqual(boxing.motionClassAt('miss', 180), 'motion-recover');
+  assert.strictEqual(boxing.motionClassAt(null, 0), 'motion-guard');
 });
 
 test('命中与漏拍更新分数和最高连击', () => {
