@@ -4,8 +4,11 @@
     <text class="remaining">{{ remainingText }}</text>
 
     <div class="orb-shell orb-shell-{{ screenSize }} orb-shell-{{ screenViewport }}">
-      <div class="breath-halo breath-halo-{{ screenViewport }} {{ breathPhase }} {{ breathRhythmClass }} {{ breathVisualClass }}"></div>
-      <div class="orb-core orb-core-{{ screenSize }} orb-core-{{ screenViewport }} {{ breathPhase }}-core {{ breathRhythmClass }} {{ breathVisualClass }}"></div>
+      <div class="breath-halo breath-halo-{{ screenViewport }} {{ breathPhase }} {{ breathRhythmClass }}">
+        <div class="breath-orb breath-orb-{{ screenViewport }} {{ breathPhase }} {{ breathRhythmClass }}">
+          <div class="orb-core {{ breathPhase }}-core {{ breathRhythmClass }}"></div>
+        </div>
+      </div>
     </div>
 
     <text class="phase-label phase-label-{{ screenViewport }}">{{ phaseLabel }}</text>
@@ -24,7 +27,6 @@ export default {
     remainingText: { type: String, default: '60' },
     breathPhase: { type: String, default: 'inhale' },
     breathRhythmClass: { type: String, default: 'rhythm-standard' },
-    breathVisualClass: { type: String, default: 'breath-step-0' },
     phaseLabel: { type: String, default: '慢慢吸气' },
     patternLabel: { type: String, default: '标准节奏 · 4-2-4' },
   },
@@ -58,7 +60,6 @@ export default {
 }
 
 .orb-shell {
-  position: relative;
   width: 250px;
   height: 250px;
   margin-top: 8px;
@@ -79,9 +80,11 @@ export default {
   justify-content: center;
   align-items: center;
   background-color: #102944;
-  transition-property: width, height, opacity;
-  transition-duration: 140ms;
-  transition-timing-function: linear;
+  transform-origin: center center;
+  animation-name: halo-breathe-standard;
+  animation-duration: 10000ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 .breath-halo.inhale {
@@ -96,53 +99,129 @@ export default {
   border-color: #247f96;
 }
 
-.breath-halo.breath-step-0 { width: 121px; height: 121px; border-radius: 61px; opacity: 0.45; }
-.breath-halo.breath-step-1 { width: 131px; height: 131px; border-radius: 66px; opacity: 0.51; }
-.breath-halo.breath-step-2 { width: 141px; height: 141px; border-radius: 71px; opacity: 0.56; }
-.breath-halo.breath-step-3 { width: 151px; height: 151px; border-radius: 76px; opacity: 0.62; }
-.breath-halo.breath-step-4 { width: 161px; height: 161px; border-radius: 81px; opacity: 0.67; }
-.breath-halo.breath-step-5 { width: 171px; height: 171px; border-radius: 86px; opacity: 0.73; }
-.breath-halo.breath-step-6 { width: 180px; height: 180px; border-radius: 90px; opacity: 0.78; }
-.breath-halo.breath-step-7 { width: 190px; height: 190px; border-radius: 95px; opacity: 0.84; }
-.breath-halo.breath-step-8 { width: 200px; height: 200px; border-radius: 100px; opacity: 0.89; }
-.breath-halo.breath-step-9 { width: 210px; height: 210px; border-radius: 105px; opacity: 0.95; }
-.breath-halo.breath-step-10 { width: 220px; height: 220px; border-radius: 110px; opacity: 1; }
+.breath-halo.rhythm-calming {
+  animation-name: halo-breathe-calming;
+  animation-duration: 12000ms;
+}
+
+.breath-orb {
+  width: 184px;
+  height: 184px;
+  border-radius: 100px;
+  justify-content: center;
+  align-items: center;
+}
+
+.breath-orb.inhale {
+  animation-name: orb-inhale;
+  animation-duration: 4000ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+.breath-orb.hold {
+  animation-name: orb-hold;
+  animation-duration: 2000ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+.breath-orb.exhale {
+  animation-name: orb-exhale;
+  animation-duration: 4000ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+.breath-orb.rhythm-calming.exhale {
+  animation-duration: 6000ms;
+}
 
 .orb-core {
-  position: absolute;
-  left: 106px;
-  top: 106px;
   width: 38px;
   height: 38px;
   border-radius: 19px;
   background-color: #a5f3fc;
-  transition-property: opacity, background-color;
-  transition-duration: 140ms;
-  transition-timing-function: linear;
 }
-
-.orb-core.breath-step-0 { opacity: 0.68; }
-.orb-core.breath-step-1 { opacity: 0.71; }
-.orb-core.breath-step-2 { opacity: 0.74; }
-.orb-core.breath-step-3 { opacity: 0.78; }
-.orb-core.breath-step-4 { opacity: 0.81; }
-.orb-core.breath-step-5 { opacity: 0.84; }
-.orb-core.breath-step-6 { opacity: 0.87; }
-.orb-core.breath-step-7 { opacity: 0.90; }
-.orb-core.breath-step-8 { opacity: 0.94; }
-.orb-core.breath-step-9 { opacity: 0.97; }
-.orb-core.breath-step-10 { opacity: 1; }
 
 .inhale-core {
   opacity: 1;
+  animation-name: core-breathe;
+  animation-duration: 4000ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
 }
 
 .hold-core {
   opacity: 0.88;
+  animation-name: core-hover;
+  animation-duration: 2000ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
 }
 
 .exhale-core {
   opacity: 0.68;
+  animation-name: core-release;
+  animation-duration: 4000ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+.exhale-core.rhythm-calming {
+  animation-duration: 6000ms;
+}
+
+@keyframes halo-breathe-standard {
+  0% { opacity: 0.45; transform: scale(0.55); }
+  40% { opacity: 1; transform: scale(1); }
+  60% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.45; transform: scale(0.55); }
+}
+
+@keyframes halo-breathe-calming {
+  0% { opacity: 0.45; transform: scale(0.55); }
+  33% { opacity: 1; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.45; transform: scale(0.55); }
+}
+
+@keyframes orb-inhale {
+  0% { opacity: 0.72; }
+  100% { opacity: 1; }
+}
+
+@keyframes orb-hold {
+  0% { opacity: 1; }
+  50% { opacity: 0.9; }
+  100% { opacity: 1; }
+}
+
+@keyframes orb-exhale {
+  0% { opacity: 1; }
+  100% { opacity: 0.72; }
+}
+
+@keyframes core-breathe {
+  0% { opacity: 0.62; }
+  100% { opacity: 1; }
+}
+
+@keyframes core-hover {
+  0% { opacity: 1; }
+  50% { opacity: 0.82; }
+  100% { opacity: 1; }
+}
+
+@keyframes core-release {
+  0% { opacity: 1; }
+  100% { opacity: 0.68; }
 }
 
 .phase-label {
@@ -186,11 +265,6 @@ export default {
   border-radius: 115px;
 }
 
-.orb-core-compact {
-  left: 96px;
-  top: 96px;
-}
-
 /* 短视口压缩纵向节奏，确保圆屏主操作始终可见。 */
 .breathing-page-short {
   padding-top: 8px;
@@ -203,28 +277,27 @@ export default {
   border-radius: 65px;
 }
 
-.breath-halo-short {
+.breath-halo-short.inhale,
+.breath-halo-short.hold {
   width: 116px;
   height: 116px;
-  border-radius: 58px;
 }
 
-.orb-core-short {
-  left: 46px;
-  top: 46px;
+.breath-halo-short.exhale {
+  width: 116px;
+  height: 116px;
 }
 
-.breath-halo-short.breath-step-0 { width: 64px; height: 64px; border-radius: 32px; }
-.breath-halo-short.breath-step-1 { width: 69px; height: 69px; border-radius: 35px; }
-.breath-halo-short.breath-step-2 { width: 74px; height: 74px; border-radius: 37px; }
-.breath-halo-short.breath-step-3 { width: 80px; height: 80px; border-radius: 40px; }
-.breath-halo-short.breath-step-4 { width: 85px; height: 85px; border-radius: 43px; }
-.breath-halo-short.breath-step-5 { width: 90px; height: 90px; border-radius: 45px; }
-.breath-halo-short.breath-step-6 { width: 95px; height: 95px; border-radius: 48px; }
-.breath-halo-short.breath-step-7 { width: 100px; height: 100px; border-radius: 50px; }
-.breath-halo-short.breath-step-8 { width: 105px; height: 105px; border-radius: 53px; }
-.breath-halo-short.breath-step-9 { width: 111px; height: 111px; border-radius: 56px; }
-.breath-halo-short.breath-step-10 { width: 116px; height: 116px; border-radius: 58px; }
+.breath-orb-short.inhale,
+.breath-orb-short.hold {
+  width: 108px;
+  height: 108px;
+}
+
+.breath-orb-short.exhale {
+  width: 108px;
+  height: 108px;
+}
 
 .phase-label-short {
   margin-top: 2px;

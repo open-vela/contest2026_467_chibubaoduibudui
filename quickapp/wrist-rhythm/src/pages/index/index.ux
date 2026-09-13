@@ -28,7 +28,6 @@
       remaining-text="{{ remainingText }}"
       breath-phase="{{ breathPhase }}"
       breath-rhythm-class="{{ breathRhythmClass }}"
-      breath-visual-class="{{ breathVisualClass }}"
       phase-label="{{ phaseLabel }}"
       pattern-label="{{ patternLabel }}"
       onstop-training="stopTraining">
@@ -58,7 +57,6 @@
       boxing-prompt="{{ boxingPrompt }}"
       boxing-pace-label="{{ boxingPaceLabel }}"
       boxing-target-class="{{ boxingTargetClass }}"
-      boxing-motion-class="{{ boxingMotionClass }}"
       boxing-fallback="{{ boxingFallback }}"
       boxing-message="{{ boxingMessage }}"
       onsimulate-punch="simulatePunch"
@@ -132,7 +130,6 @@ export default {
     patternLabel: '标准节奏 · 4-2-4',
     breathPhase: 'inhale',
     breathRhythmClass: 'rhythm-standard',
-    breathVisualClass: 'breath-step-0',
     phaseLabel: '慢慢吸气',
     remainingText: '60',
     timer: null,
@@ -155,9 +152,6 @@ export default {
     boxingPrompt: '准备',
     boxingPaceLabel: '正在读取心率节拍',
     boxingTargetClass: 'target-waiting',
-    boxingMotionClass: 'motion-guard',
-    boxingMotionMode: null,
-    boxingMotionStartedAt: 0,
     boxingFallback: false,
     boxingMessage: '',
     motionConnected: false,
@@ -278,7 +272,7 @@ export default {
     this.view = 'breathing';
     this.updatePatternLabel();
     this.tick();
-    this.timer = setInterval(() => this.tick(), 100);
+    this.timer = setInterval(() => this.tick(), 250);
   },
 
   tick() {
@@ -306,7 +300,6 @@ export default {
 
     const phase = steady.phaseAt(elapsed - this.cycleStartElapsed, this.currentPattern);
     reactive.writeIfChanged(this, 'breathPhase', phase.phase);
-    reactive.writeIfChanged(this, 'breathVisualClass', steady.breathVisualClass(phase));
     reactive.writeIfChanged(this, 'phaseLabel', phase.label);
     reactive.writeIfChanged(this, 'remainingText', String(Math.ceil((steady.SESSION_MS - elapsed) / 1000)));
   },
@@ -372,7 +365,7 @@ export default {
         rearm: () => {
           this.tick();
           if (this.view === 'breathing' && this.timer === null) {
-            this.timer = setInterval(() => this.tick(), 100);
+            this.timer = setInterval(() => this.tick(), 250);
           }
         },
       });
@@ -414,9 +407,6 @@ export default {
     this.boxingPrompt = '准备';
     this.boxingPaceLabel = '正在读取心率节拍';
     this.boxingTargetClass = 'target-waiting';
-    this.boxingMotionClass = 'motion-guard';
-    this.boxingMotionMode = null;
-    this.boxingMotionStartedAt = 0;
     this.boxingFallback = false;
     this.boxingMessage = '正在连接动作传感器';
     this.motionConnected = false;
@@ -468,8 +458,6 @@ export default {
       this.boxingBeatAt = 0;
       this.boxingPrompt = '跟上节拍';
       this.boxingTargetClass = 'target-missed';
-      this.boxingMotionMode = 'miss';
-      this.boxingMotionStartedAt = elapsed;
       this.syncBoxingStats();
     }
 
@@ -480,20 +468,12 @@ export default {
       this.boxingBeatHit = false;
       this.boxingPrompt = '出拳！';
       this.boxingTargetClass = 'target-active';
-      this.boxingMotionMode = 'cue';
-      this.boxingMotionStartedAt = elapsed;
       this.boxingPaceLabel = interval === 1000
         ? '活力节拍 · 60 次/分'
         : interval === 1200
           ? '平衡节拍 · 50 次/分'
           : '舒缓节拍 · 43 次/分';
     }
-    this.syncBoxingMotion(elapsed);
-  },
-
-  syncBoxingMotion(elapsed) {
-    const age = elapsed - this.boxingMotionStartedAt;
-    reactive.writeIfChanged(this, 'boxingMotionClass', boxing.motionClassAt(this.boxingMotionMode, age));
   },
 
   registerPunch(timestamp) {
@@ -508,9 +488,6 @@ export default {
     this.boxingBeatHit = true;
     this.boxingBeatAt = 0;
     this.boxingTargetClass = 'target-hit';
-    this.boxingMotionMode = 'hit';
-    this.boxingMotionStartedAt = effectiveElapsed;
-    this.syncBoxingMotion(effectiveElapsed);
     this.boxingPrompt = scored.grade === 'perfect'
       ? '精准！'
       : scored.grade === 'good'

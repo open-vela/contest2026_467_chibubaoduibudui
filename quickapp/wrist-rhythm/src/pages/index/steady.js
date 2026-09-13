@@ -104,13 +104,6 @@ function phaseAt(elapsedMs, pattern) {
   };
 }
 
-function breathVisualClass(phase) {
-  const current = phase || {};
-  const progress = Math.max(0, Math.min(1, isValidNumber(current.progress) ? current.progress : 0));
-  const expanded = current.phase === 'exhale' ? 1 - progress : current.phase === 'hold' ? 1 : progress;
-  return `breath-step-${Math.round(expanded * 10)}`;
-}
-
 function delta(before, after) {
   if (!isValidNumber(before) || !isValidNumber(after)) return null;
   return Math.round(after - before);
@@ -141,6 +134,5 @@ module.exports = {
   shouldSuggest,
   selectPattern,
   phaseAt,
-  breathVisualClass,
   buildResult,
 };
