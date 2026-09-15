@@ -122,7 +122,7 @@ npm run build:release
 
 ```text
 artifacts/com.openvela.wristrhythm.release.1.0.0.rpk
-SHA-256: BF61BBD90E4336188C6D2838CDE6187EBC3C5B95136B4DF9A2690B6384ACCD21
+SHA-256: ADEA1DC175F9D076D2BA99BFCF793098F20FA3286B1440CFB0F6715D845B8B8A
 ```
 
 该包用于大赛评审和模拟器验证；面向应用商店或设备正式分发时，应由发布方使用其生产凭据重新签名。
