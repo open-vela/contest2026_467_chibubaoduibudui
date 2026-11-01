@@ -2,17 +2,27 @@
 
 > 将健康数据转化为可立即参与的腕上呼吸训练与节拍运动。
 
-## 界面展示
+## 界面展示（2026-11-01）
 
-| 健康首页 | 稳态呼吸训练 |
+以下为 **2026-11-01 官方模拟器原生截图**，来自使用当前界面与训练逻辑的独立情景演示包，画面保留“模拟数据”标识。健康数值是预设情景，不是人体测量，也不代表训练效果；正式应用仍通过 `@service.health` 获取实际读数。
+
+| 健康首页：压力45分 | 呼吸训练：吸气阶段 |
 | --- | --- |
-| ![健康首页](quickapp/wrist-rhythm/docs/images/home-preview.png) | ![稳态呼吸训练](quickapp/wrist-rhythm/docs/images/steady-training.png) |
+| ![健康首页：压力45分](quickapp/wrist-rhythm/docs/images/20261101/home-preview.png) | ![呼吸训练：吸气阶段](quickapp/wrist-rhythm/docs/images/20261101/steady-training.png) |
 
-| 节奏拳训练 | 稳态训练结果 |
+| 呼吸结果：45→24 | 男女拳手选择 |
 | --- | --- |
-| ![节奏拳训练](quickapp/wrist-rhythm/docs/images/boxing-training.png) | ![稳态训练结果](quickapp/wrist-rhythm/docs/images/steady-result.png) |
+| ![呼吸结果：45→24](quickapp/wrist-rhythm/docs/images/20261101/steady-result.png) | ![男女拳手选择](quickapp/wrist-rhythm/docs/images/20261101/fighter-choice.png) |
 
-以上图片来自 AIoT 模拟器验收画面，并裁切为纯应用界面。
+| 男拳手训练 | 女拳手训练 |
+| --- | --- |
+| ![男拳手训练](quickapp/wrist-rhythm/docs/images/20261101/boxing-training.png) | ![女拳手训练](quickapp/wrist-rhythm/docs/images/20261101/boxing-female-training.png) |
+
+| 节奏拳结果：38→39 | 无动作对照：0分 |
+| --- | --- |
+| ![节奏拳结果：38→39](quickapp/wrist-rhythm/docs/images/20261101/boxing-result.png) | ![无动作对照：0分](quickapp/wrist-rhythm/docs/images/20261101/boxing-zero-control.png) |
+
+图片来源、原始像素哈希和使用边界见 [截图说明](quickapp/wrist-rhythm/docs/images/20261101/README.md)；当前行为与验证范围见 [当前版本说明](quickapp/wrist-rhythm/docs/current-version-20261101.md)。
 
 ## 一、作品简介
 
@@ -36,7 +46,7 @@
 - 使用真实经过时间驱动倒计时，切入后台时暂停会话并释放健康订阅、传感器和计时器，返回前台后安全恢复。
 - 加速度突变识别、350 ms 动作防抖、三级节拍评分、连击统计与心率自适应节奏。
 - 对健康接口、订阅、加速度计和设备信息失败提供明确的异常处理与降级路径。
-- 使用青蓝静息能量与玫红运动能量组成棱镜夜光界面，并针对圆屏安全区、紧凑尺寸和短视口适配。
+- 使用曜石底色、青蓝呼吸与紫罗兰节奏拳组成棱镜夜光界面，并针对圆屏安全区、紧凑尺寸和短视口适配。
 - 203 项自动化测试覆盖训练算法、健康样本有效性、传感器失败与恢复、页面生命周期、组件契约、发布构建编排和赛事提交契约。
 
 ## 四、目录结构
@@ -167,7 +177,7 @@ node scripts/verify-contest-submission.js
 
 加速度计使用官方 `@system.sensor.subscribeAccelerometer({ interval: 'game' })`。不支持该能力的设备会明确提示无法记录出拳，稳态呼吸训练不受影响。传感器连接失败、运行中失效和后台恢复均有独立处理，不将中断训练显示为正常完成成绩。
 
-当前自动化测试与构建不能证明真机表现、真人动作识别准确率或健康效果。本次同步未重新执行模拟器或真机验收；README 中的旧界面截图属于历史演示，不作为最新代码的验收证据。
+当前自动化测试与构建不能证明真机表现、真人动作识别准确率或健康效果。上方截图已更新为 2026-11-01 独立情景演示包的原生画面；它们不替代当前正式安装包的完整模拟器验收，真机与真人验证仍未完成。
 
 本应用只提供放松和运动训练体验，不用于疾病诊断或治疗，也不以单次健康读数替代专业医疗判断。
 
