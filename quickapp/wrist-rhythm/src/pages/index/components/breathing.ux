@@ -1,311 +1,53 @@
+<import name="action-button" src="./action-button.ux"></import>
 <template>
   <div class="page breathing-page breathing-page-{{ screenSize }} breathing-page-{{ screenViewport }}">
     <text class="session-label">稳态训练</text>
     <text class="remaining">{{ remainingText }}</text>
-
     <div class="orb-shell orb-shell-{{ screenSize }} orb-shell-{{ screenViewport }}">
-      <div class="breath-halo breath-halo-{{ screenViewport }} {{ breathPhase }} {{ breathRhythmClass }}">
-        <div class="breath-orb breath-orb-{{ screenViewport }} {{ breathPhase }} {{ breathRhythmClass }}">
-          <div class="orb-core {{ breathPhase }}-core {{ breathRhythmClass }}"></div>
-        </div>
-      </div>
+      <image class="breath-art breath-art-{{ screenSize }} breath-art-{{ screenViewport }}" src="{{ breathFrameSrc }}" object-fit="contain"></image>
     </div>
-
     <text class="phase-label phase-label-{{ screenViewport }}">{{ phaseLabel }}</text>
     <text class="pattern-label">{{ patternLabel }}</text>
-    <div class="stop-button stop-button-{{ screenViewport }}" onclick="stopTraining">
-      <text class="stop-text">结束训练</text>
-    </div>
+    <text class="pattern-reason">{{ patternReason }}</text>
+    <div class="stop-button stop-button-{{ screenViewport }}"><action-button label="结束训练" motion-class="{{ motionClass }}" onactivate="stopTraining"></action-button></div>
   </div>
 </template>
-
 <script>
 export default {
+  onReady() { console.log('WRIST_VIEW ' + JSON.stringify({ view: 'breathing', timestamp: Date.now(), remaining: this.remainingText, phase: this.phaseLabel })); },
   props: {
+    motionClass: { type: String, default: 'motion-full' },
     screenSize: { type: String, default: 'regular' },
     screenViewport: { type: String, default: 'normal' },
     remainingText: { type: String, default: '60' },
     breathPhase: { type: String, default: 'inhale' },
     breathRhythmClass: { type: String, default: 'rhythm-standard' },
+    breathFrameSrc: { type: String, default: '/common/training-8a8ab3423b8f/breath-00.png' },
     phaseLabel: { type: String, default: '慢慢吸气' },
     patternLabel: { type: String, default: '标准节奏 · 4-2-4' },
+    patternReason: { type: String, default: '数据不足，使用默认节奏' },
   },
   stopTraining() { this.$emit('stopTraining'); },
 };
 </script>
-
-<style>
-.page {
-  width: 100%;
-  height: 100%;
-  flex-direction: column;
-  align-items: center;
-}
-
-.breathing-page {
-  padding-top: 28px;
-}
-
-.session-label {
-  font-size: 13px;
-  letter-spacing: 2px;
-  color: #8d91bd;
-}
-
-.remaining {
-  margin-top: 1px;
-  font-size: 30px;
-  font-weight: 700;
-  color: #f8fafc;
-}
-
-.orb-shell {
-  width: 250px;
-  height: 250px;
-  margin-top: 8px;
-  border-width: 1px;
-  border-color: #2e356d;
-  border-radius: 125px;
-  justify-content: center;
-  align-items: center;
-  background-color: #0d1630;
-}
-
-.breath-halo {
-  width: 220px;
-  height: 220px;
-  border-width: 1px;
-  border-color: #247f96;
-  border-radius: 110px;
-  justify-content: center;
-  align-items: center;
-  background-color: #102944;
-  transform-origin: center center;
-  animation-name: halo-breathe-standard;
-  animation-duration: 10000ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-.breath-halo.inhale {
-  border-color: #247f96;
-}
-
-.breath-halo.hold {
-  border-color: #67e8f9;
-}
-
-.breath-halo.exhale {
-  border-color: #247f96;
-}
-
-.breath-halo.rhythm-calming {
-  animation-name: halo-breathe-calming;
-  animation-duration: 12000ms;
-}
-
-.breath-orb {
-  width: 184px;
-  height: 184px;
-  border-radius: 100px;
-  justify-content: center;
-  align-items: center;
-}
-
-.breath-orb.inhale {
-  animation-name: orb-inhale;
-  animation-duration: 4000ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-.breath-orb.hold {
-  animation-name: orb-hold;
-  animation-duration: 2000ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-.breath-orb.exhale {
-  animation-name: orb-exhale;
-  animation-duration: 4000ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-.breath-orb.rhythm-calming.exhale {
-  animation-duration: 6000ms;
-}
-
-.orb-core {
-  width: 38px;
-  height: 38px;
-  border-radius: 19px;
-  background-color: #a5f3fc;
-}
-
-.inhale-core {
-  opacity: 1;
-  animation-name: core-breathe;
-  animation-duration: 4000ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-.hold-core {
-  opacity: 0.88;
-  animation-name: core-hover;
-  animation-duration: 2000ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-.exhale-core {
-  opacity: 0.68;
-  animation-name: core-release;
-  animation-duration: 4000ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-.exhale-core.rhythm-calming {
-  animation-duration: 6000ms;
-}
-
-@keyframes halo-breathe-standard {
-  0% { opacity: 0.45; transform: scale(0.55); }
-  40% { opacity: 1; transform: scale(1); }
-  60% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.45; transform: scale(0.55); }
-}
-
-@keyframes halo-breathe-calming {
-  0% { opacity: 0.45; transform: scale(0.55); }
-  33% { opacity: 1; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.45; transform: scale(0.55); }
-}
-
-@keyframes orb-inhale {
-  0% { opacity: 0.72; }
-  100% { opacity: 1; }
-}
-
-@keyframes orb-hold {
-  0% { opacity: 1; }
-  50% { opacity: 0.9; }
-  100% { opacity: 1; }
-}
-
-@keyframes orb-exhale {
-  0% { opacity: 1; }
-  100% { opacity: 0.72; }
-}
-
-@keyframes core-breathe {
-  0% { opacity: 0.62; }
-  100% { opacity: 1; }
-}
-
-@keyframes core-hover {
-  0% { opacity: 1; }
-  50% { opacity: 0.82; }
-  100% { opacity: 1; }
-}
-
-@keyframes core-release {
-  0% { opacity: 1; }
-  100% { opacity: 0.68; }
-}
-
-.phase-label {
-  margin-top: 10px;
-  font-size: 27px;
-  font-weight: 600;
-  color: #f8fafc;
-}
-
-.pattern-label {
-  margin-top: 2px;
-  font-size: 13px;
-  color: #8d91bd;
-}
-
-.stop-button {
-  width: 150px;
-  height: 42px;
-  margin-top: 12px;
-  border-width: 1px;
-  border-color: #3b4374;
-  border-radius: 21px;
-  background-color: #11152e;
-  justify-content: center;
-  align-items: center;
-}
-
-.stop-text {
-  font-size: 14px;
-  color: #a7a9c7;
-}
-
-/* 小尺寸设备优先保证操作区和底部按钮完整可见。 */
-.breathing-page-compact {
-  padding-top: 20px;
-}
-
-.orb-shell-compact {
-  width: 230px;
-  height: 230px;
-  border-radius: 115px;
-}
-
-/* 短视口压缩纵向节奏，确保圆屏主操作始终可见。 */
-.breathing-page-short {
-  padding-top: 8px;
-}
-
-.orb-shell-short {
-  width: 130px;
-  height: 130px;
-  margin-top: 2px;
-  border-radius: 65px;
-}
-
-.breath-halo-short.inhale,
-.breath-halo-short.hold {
-  width: 116px;
-  height: 116px;
-}
-
-.breath-halo-short.exhale {
-  width: 116px;
-  height: 116px;
-}
-
-.breath-orb-short.inhale,
-.breath-orb-short.hold {
-  width: 108px;
-  height: 108px;
-}
-
-.breath-orb-short.exhale {
-  width: 108px;
-  height: 108px;
-}
-
-.phase-label-short {
-  margin-top: 2px;
-  font-size: 26px;
-}
-
-.stop-button-short {
-  height: 32px;
-  margin-top: 4px;
-}
+<style lang="scss">
+@use '../../../common/prism' as p;
+.page { @include p.page; }
+.breathing-page { padding-top: 24px; background-color: p.$canvas; }
+.session-label { font-size: 13px; letter-spacing: 2px; color: p.$muted; }
+.remaining { margin-top: 1px; font-size: 30px; font-weight: 700; color: p.$text; }
+.orb-shell { @include p.dial; border-radius: 115px; width: 230px; height: 230px; margin-top: 8px; justify-content: center; align-items: center; }
+.breath-art { width: 230px; height: 230px; }
+.phase-label { margin-top: 10px; font-size: 27px; font-weight: 600; color: p.$text; }
+.pattern-label { margin-top: 2px; font-size: 13px; color: p.$muted; }
+.pattern-reason { font-size: 12px; height: 16px; color: p.$muted; }
+.stop-button { @include p.action-slot; margin-top: 10px; }
+.breathing-page-compact { padding-top: 20px; }
+.orb-shell-compact { border-radius: 105px; width: 210px; height: 210px; }
+.breath-art-compact { width: 210px; height: 210px; }
+.breathing-page-short { padding-top: 8px; }
+.orb-shell-short { border-radius: 65px; width: 130px; height: 130px; margin-top: 2px; }
+.breath-art-short { width: 130px; height: 130px; }
+.phase-label-short { margin-top: 2px; font-size: 26px; }
+.stop-button-short { height: p.$touch-height; margin-top: 4px; }
 </style>

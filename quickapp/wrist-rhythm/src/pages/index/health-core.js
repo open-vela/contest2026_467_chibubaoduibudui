@@ -1,7 +1,7 @@
 // service.health 返回值的纯数据规范化层。
 
 function validData(data) {
-  return data && typeof data.value === 'number' && typeof data.timeStamp === 'number';
+  return data && Number.isFinite(data.value) && Number.isFinite(data.timeStamp) && data.timeStamp > 0;
 }
 
 function normalizeRecent(list) {

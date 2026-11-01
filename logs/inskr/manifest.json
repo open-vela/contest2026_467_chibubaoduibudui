@@ -2,8 +2,8 @@
   "schema_version": "1.0",
   "team_id": "contest2026_467_chibubaoduibudui",
   "github_login": "inskr",
-  "generator": "codex-rollout-backfill@1.1.0",
-  "updated_at": "2026-09-15T09:11:02.076Z",
+  "generator": "codex-rollout-backfill@1.1.0 + official-codex-dialogue-backfill (2026-11-01 selection)",
+  "updated_at": "2026-11-01T10:34:28.570418+00:00",
   "sessions": [
     {
       "session_id": "01a02f10-21de-71b3-bfb4-def1e5c68b65",
@@ -15,18 +15,6 @@
       "collection_mode": "cli",
       "health": "ok",
       "source_event_count": 28,
-      "model": "gpt-5.6-sol"
-    },
-    {
-      "session_id": "01a02f48-f58e-7373-aa07-3de5332547d1",
-      "tool": "codex",
-      "started_at": "2026-08-23T15:42:00.625Z",
-      "last_event_at": "2026-08-23T15:50:08.433Z",
-      "event_count": 110,
-      "file_path": "logs/inskr/2026-08-23/codex__01a02f48-f58e-7373-aa07-3de5332547d1.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 221,
       "model": "gpt-5.6-sol"
     },
     {
@@ -330,18 +318,6 @@
       "model": "gpt-5.6-sol"
     },
     {
-      "session_id": "01a03364-82df-73c1-8584-c4ad919d0d73",
-      "tool": "codex",
-      "started_at": "2026-08-24T10:50:21.913Z",
-      "last_event_at": "2026-08-24T11:17:34.944Z",
-      "event_count": 317,
-      "file_path": "logs/inskr/2026-08-24/codex__01a03364-82df-73c1-8584-c4ad919d0d73.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 612,
-      "model": "gpt-5.6-sol"
-    },
-    {
       "session_id": "01a03387-a9e8-76a3-8253-fe7b3bd55737",
       "tool": "codex",
       "started_at": "2026-08-24T11:30:20.264Z",
@@ -364,30 +340,6 @@
       "collection_mode": "cli",
       "health": "ok",
       "source_event_count": 553,
-      "model": "gpt-5.6-sol"
-    },
-    {
-      "session_id": "01a033bc-7838-7b22-8ea7-b537969f5ca0",
-      "tool": "codex",
-      "started_at": "2026-08-24T12:26:26.036Z",
-      "last_event_at": "2026-08-24T13:21:50.243Z",
-      "event_count": 417,
-      "file_path": "logs/inskr/2026-08-24/codex__01a033bc-7838-7b22-8ea7-b537969f5ca0.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 905,
-      "model": "gpt-5.6-sol"
-    },
-    {
-      "session_id": "01a033eb-be81-7832-9b09-cbb909da27a9",
-      "tool": "codex",
-      "started_at": "2026-08-24T13:22:03.165Z",
-      "last_event_at": "2026-08-24T14:36:36.572Z",
-      "event_count": 512,
-      "file_path": "logs/inskr/2026-08-24/codex__01a033eb-be81-7832-9b09-cbb909da27a9.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 1100,
       "model": "gpt-5.6-sol"
     },
     {
@@ -691,67 +643,6 @@
       "model": "gpt-5.6-sol"
     },
     {
-      "session_id": "01a0843c-03f7-75c2-af8f-60acce16cf88",
-      "tool": "codex",
-      "started_at": "2026-09-09T03:35:35.297Z",
-      "last_event_at": "2026-09-14T09:41:27.808Z",
-      "event_count": 317,
-      "file_path": "logs/inskr/2026-09-09/codex__01a0843c-03f7-75c2-af8f-60acce16cf88.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 818,
-      "model": "gpt-5.6-sol"
-    },
-    {
-      "session_id": "01a08a8d-3547-7063-9010-cc0d44f35cbd",
-      "tool": "codex",
-      "started_at": "2026-09-10T09:01:46.841Z",
-      "last_event_at": "2026-09-13T14:52:58.648Z",
-      "event_count": 415,
-      "file_path": "logs/inskr/2026-09-10/codex__01a08a8d-3547-7063-9010-cc0d44f35cbd.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 1052,
-      "model": "gpt-reserve"
-    },
-    {
-      "session_id": "01a094c8-ae68-7540-8946-5781b81ee8ad",
-      "tool": "codex",
-      "started_at": "2026-09-12T08:43:18.356Z",
-      "last_event_at": "2026-09-13T14:47:02.395Z",
-      "event_count": 1059,
-      "file_path": "logs/inskr/2026-09-12/codex__01a094c8-ae68-7540-8946-5781b81ee8ad.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 2807,
-      "model": "gpt-reserve",
-      "redacted_count_total": 1
-    },
-    {
-      "session_id": "01a09611-ac09-7103-b120-2bd1d32d3c1f",
-      "tool": "codex",
-      "started_at": "2026-09-12T14:42:21.437Z",
-      "last_event_at": "2026-09-12T15:11:47.761Z",
-      "event_count": 71,
-      "file_path": "logs/inskr/2026-09-12/codex__01a09611-ac09-7103-b120-2bd1d32d3c1f.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 172,
-      "model": "gpt-5.6-sol"
-    },
-    {
-      "session_id": "01a09630-c76d-7051-bd0d-e18744d85a37",
-      "tool": "codex",
-      "started_at": "2026-09-12T15:16:52.426Z",
-      "last_event_at": "2026-09-13T14:46:31.811Z",
-      "event_count": 603,
-      "file_path": "logs/inskr/2026-09-12/codex__01a09630-c76d-7051-bd0d-e18744d85a37.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 1821,
-      "model": "gpt-reserve"
-    },
-    {
       "session_id": "01a09633-7422-7301-9b19-038953374e41",
       "tool": "codex",
       "started_at": "2026-09-12T15:20:12.530Z",
@@ -761,222 +652,6 @@
       "collection_mode": "cli",
       "health": "ok",
       "source_event_count": 201,
-      "model": "gpt-5.6-sol"
-    },
-    {
-      "session_id": "01a09a0e-f2d6-7351-b841-78d54f10a31b",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:17:47.774Z",
-      "last_event_at": "2026-09-13T09:20:16.129Z",
-      "event_count": 39,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a0e-f2d6-7351-b841-78d54f10a31b.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 101,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a11-c05a-7080-a819-789a492b4b86",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:20:51.554Z",
-      "last_event_at": "2026-09-13T09:21:27.655Z",
-      "event_count": 19,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a11-c05a-7080-a819-789a492b4b86.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 47,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a12-e697-7001-a972-b8a93bc98664",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:22:06.960Z",
-      "last_event_at": "2026-09-13T09:37:47.305Z",
-      "event_count": 118,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a12-e697-7001-a972-b8a93bc98664.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 297,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a18-7fdc-7d03-80e9-f53ef357fff8",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:28:13.124Z",
-      "last_event_at": "2026-09-13T09:29:38.407Z",
-      "event_count": 28,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a18-7fdc-7d03-80e9-f53ef357fff8.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 65,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a1d-6dfb-70d0-b6b3-2c9481caac56",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:33:36.253Z",
-      "last_event_at": "2026-09-13T09:35:27.904Z",
-      "event_count": 17,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a1d-6dfb-70d0-b6b3-2c9481caac56.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 42,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a21-94c7-7f11-a14a-1abc58b1f8d2",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:38:08.202Z",
-      "last_event_at": "2026-09-13T09:38:45.020Z",
-      "event_count": 14,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a21-94c7-7f11-a14a-1abc58b1f8d2.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 33,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a22-abe2-7813-b37e-37bd92162458",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:39:19.584Z",
-      "last_event_at": "2026-09-13T09:56:17.318Z",
-      "event_count": 128,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a22-abe2-7813-b37e-37bd92162458.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 308,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a2c-0825-7140-ab58-e543b3ebc64b",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:49:33.118Z",
-      "last_event_at": "2026-09-13T09:51:47.116Z",
-      "event_count": 38,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a2c-0825-7140-ab58-e543b3ebc64b.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 90,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a33-2862-7d13-8fbb-28386c108a00",
-      "tool": "codex",
-      "started_at": "2026-09-13T09:57:20.196Z",
-      "last_event_at": "2026-09-13T09:58:54.274Z",
-      "event_count": 30,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a33-2862-7d13-8fbb-28386c108a00.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 72,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a35-b808-7341-993a-60a8d576bbf8",
-      "tool": "codex",
-      "started_at": "2026-09-13T10:00:07.888Z",
-      "last_event_at": "2026-09-13T10:37:09.344Z",
-      "event_count": 165,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a35-b808-7341-993a-60a8d576bbf8.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 394,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a39-8e47-72c0-9211-10937f13c6e0",
-      "tool": "codex",
-      "started_at": "2026-09-13T10:04:19.419Z",
-      "last_event_at": "2026-09-13T10:07:15.646Z",
-      "event_count": 38,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a39-8e47-72c0-9211-10937f13c6e0.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 88,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a52-0447-7952-b73f-71c67fd848d2",
-      "tool": "codex",
-      "started_at": "2026-09-13T10:31:02.857Z",
-      "last_event_at": "2026-09-13T10:33:21.764Z",
-      "event_count": 20,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a52-0447-7952-b73f-71c67fd848d2.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 48,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a57-f5c1-7df0-b810-f2e3a65d020f",
-      "tool": "codex",
-      "started_at": "2026-09-13T10:37:32.267Z",
-      "last_event_at": "2026-09-13T10:39:13.064Z",
-      "event_count": 24,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a57-f5c1-7df0-b810-f2e3a65d020f.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 57,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09a59-fe26-7b73-a84a-5e07bf1cfc90",
-      "tool": "codex",
-      "started_at": "2026-09-13T10:39:45.636Z",
-      "last_event_at": "2026-09-13T13:35:58.232Z",
-      "event_count": 109,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09a59-fe26-7b73-a84a-5e07bf1cfc90.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 334,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09af2-fe93-7f33-94a2-c129fc11f383",
-      "tool": "codex",
-      "started_at": "2026-09-13T13:26:52.620Z",
-      "last_event_at": "2026-09-13T13:28:56.356Z",
-      "event_count": 15,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09af2-fe93-7f33-94a2-c129fc11f383.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 52,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09afb-b4be-7201-8236-8f33e7003e24",
-      "tool": "codex",
-      "started_at": "2026-09-13T13:36:23.455Z",
-      "last_event_at": "2026-09-13T13:38:25.599Z",
-      "event_count": 11,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09afb-b4be-7201-8236-8f33e7003e24.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 36,
-      "model": "gpt-5.6-terra"
-    },
-    {
-      "session_id": "01a09afe-bf85-7e60-b213-e9436398bb67",
-      "tool": "codex",
-      "started_at": "2026-09-13T13:39:44.095Z",
-      "last_event_at": "2026-09-13T14:25:23.300Z",
-      "event_count": 116,
-      "file_path": "logs/inskr/2026-09-13/codex__01a09afe-bf85-7e60-b213-e9436398bb67.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 415,
-      "model": "gpt-6-astra"
-    },
-    {
-      "session_id": "01a09ef6-0175-7e13-8234-dd8e84cb9b23",
-      "tool": "codex",
-      "started_at": "2026-09-14T08:09:23.618Z",
-      "last_event_at": "2026-09-14T08:23:19.113Z",
-      "event_count": 97,
-      "file_path": "logs/inskr/2026-09-14/codex__01a09ef6-0175-7e13-8234-dd8e84cb9b23.jsonl",
-      "collection_mode": "cli",
-      "health": "ok",
-      "source_event_count": 239,
       "model": "gpt-5.6-sol"
     },
     {
@@ -990,6 +665,137 @@
       "health": "ok",
       "source_event_count": 425,
       "model": "gpt-5.6-sol"
+    },
+    {
+      "session_id": "01a1346d-ddaa-7022-b911-e636d85592d4",
+      "tool": "codex",
+      "started_at": "2026-10-13T08:43:14.376Z",
+      "last_event_at": "2026-10-13T16:23:42.076Z",
+      "event_count": 53,
+      "file_path": "logs/inskr/2026-10-13/codex__01a1346d-ddaa-7022-b911-e636d85592d4.jsonl",
+      "collection_mode": "backfill-sqlite",
+      "health": "ok",
+      "source_integrity": {
+        "captured_at": "2026-11-01T10:34:28.201950+00:00",
+        "rollouts": [
+          {
+            "source_name": "rollout-2026-10-13T16-42-58-01a1346d-ddaa-7022-b911-e636d85592d4.jsonl.zst",
+            "sha256": "f586d865d5b6fd00e97efd242fafd67bc70fa1cb96792710074fa676e279651b",
+            "size": 101977
+          },
+          {
+            "source_name": "rollout-2026-10-13T16-43-29-01a1346d-ddaa-7022-b911-e636d85592d4_01a1346e-588a-7b30-b26e-13600d734cc3.jsonl",
+            "sha256": "ca075e268b5cedc511e224b969ef7dbd90473859acfd902eef58cd113d8eee9d",
+            "size": 13836342
+          }
+        ]
+      }
+    },
+    {
+      "session_id": "01a13ad2-79a4-7ea1-8b57-e156050c9088",
+      "tool": "codex",
+      "started_at": "2026-10-14T14:30:37.754Z",
+      "last_event_at": "2026-10-14T14:41:44.564Z",
+      "event_count": 8,
+      "file_path": "logs/inskr/2026-10-14/codex__01a13ad2-79a4-7ea1-8b57-e156050c9088.jsonl",
+      "collection_mode": "backfill-sqlite",
+      "health": "ok",
+      "source_integrity": {
+        "captured_at": "2026-11-01T10:34:28.236977+00:00",
+        "rollouts": [
+          {
+            "source_name": "rollout-2026-10-14T22-30-34-01a13ad2-79a4-7ea1-8b57-e156050c9088.jsonl.zst",
+            "sha256": "5b36f7eafd7098b416d5a7b97a0117c868afe5c98e8d34b7b62dd0f6c51eb649",
+            "size": 1162561
+          }
+        ]
+      }
+    },
+    {
+      "session_id": "01a15daa-4464-7870-923b-02ec0a695ca5",
+      "tool": "codex",
+      "started_at": "2026-10-21T08:53:42.769Z",
+      "last_event_at": "2026-10-24T05:56:40.165Z",
+      "event_count": 10,
+      "file_path": "logs/inskr/2026-10-21/codex__01a15daa-4464-7870-923b-02ec0a695ca5.jsonl",
+      "collection_mode": "backfill-sqlite",
+      "health": "ok",
+      "source_integrity": {
+        "captured_at": "2026-11-01T10:34:28.256744+00:00",
+        "rollouts": [
+          {
+            "source_name": "rollout-2026-10-21T16-53-22-01a15daa-4464-7870-923b-02ec0a695ca5.jsonl",
+            "sha256": "349553c254fe950ba9c882f9dafc4ac8aea9a28a5b049c3fc7e9fd352a4b5641",
+            "size": 1125888
+          }
+        ]
+      }
+    },
+    {
+      "session_id": "01a1767c-d3fc-7900-9f83-527f6e7f486b",
+      "tool": "codex",
+      "started_at": "2026-10-26T04:34:21.837Z",
+      "last_event_at": "2026-10-26T05:54:41.654Z",
+      "event_count": 21,
+      "file_path": "logs/inskr/2026-10-26/codex__01a1767c-d3fc-7900-9f83-527f6e7f486b.jsonl",
+      "collection_mode": "backfill-sqlite",
+      "health": "ok",
+      "source_integrity": {
+        "captured_at": "2026-11-01T10:34:28.297197+00:00",
+        "rollouts": [
+          {
+            "source_name": "rollout-2026-10-26T12-34-14-01a1767c-d3fc-7900-9f83-527f6e7f486b.jsonl",
+            "sha256": "232c7ad39e463fa6721ab8ac4900ca280eb940de538e851fa545ffebb67419a5",
+            "size": 2479888
+          }
+        ]
+      }
+    },
+    {
+      "session_id": "01a18ad9-3468-7371-b389-e8ba363fb050",
+      "tool": "codex",
+      "started_at": "2026-10-30T03:27:35.549Z",
+      "last_event_at": "2026-10-30T03:34:53.241Z",
+      "event_count": 8,
+      "file_path": "logs/inskr/2026-10-30/codex__01a18ad9-3468-7371-b389-e8ba363fb050.jsonl",
+      "collection_mode": "backfill-sqlite",
+      "health": "ok",
+      "source_integrity": {
+        "captured_at": "2026-11-01T10:34:28.331823+00:00",
+        "rollouts": [
+          {
+            "source_name": "rollout-2026-10-30T11-27-33-01a18ad9-3468-7371-b389-e8ba363fb050.jsonl",
+            "sha256": "de1eb2b3169390801545a5a753a03096e53bb08170d62aaaa730db66010905a6",
+            "size": 1023949
+          }
+        ]
+      }
+    },
+    {
+      "session_id": "01a19697-d9bf-7ab2-9a75-e0582f96b32b",
+      "tool": "codex",
+      "started_at": "2026-11-01T10:11:40.755Z",
+      "last_event_at": "2026-11-01T10:33:09.435Z",
+      "event_count": 9,
+      "file_path": "logs/inskr/2026-11-01/codex__01a19697-d9bf-7ab2-9a75-e0582f96b32b.jsonl",
+      "collection_mode": "backfill-sqlite",
+      "health": "ok",
+      "source_integrity": {
+        "captured_at": "2026-11-01T10:34:28.570375+00:00",
+        "rollouts": [
+          {
+            "source_name": "rollout-2026-11-01T18-11-36-01a19697-d9bf-7ab2-9a75-e0582f96b32b.jsonl",
+            "sha256": "4997bf521057a763e4c67661cb2bd74e5f3f80f087fa6493162ab39a90730e64",
+            "size": 170513
+          },
+          {
+            "source_name": "rollout-2026-11-01T18-12-13-01a19697-d9bf-7ab2-9a75-e0582f96b32b_01a19698-68bc-7222-a155-9e61010155e8.jsonl",
+            "sha256": "c149ed65262dbefa02971b7757ef8eae9a6e018166f4312eb74a522cdcf9fad9",
+            "size": 1405066
+          }
+        ]
+      },
+      "data_completeness_warning": "Active submission session snapshot; events after last_event_at are not included."
     }
   ]
 }

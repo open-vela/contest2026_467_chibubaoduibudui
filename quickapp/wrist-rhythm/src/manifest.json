@@ -11,7 +11,8 @@
   "features": [
     { "name": "service.health" },
     { "name": "system.sensor" },
-    { "name": "system.device" }
+    { "name": "system.device" },
+    { "name": "system.storage" }
   ],
   "permissions": [
     { "name": "hapjs.permission.HEALTH" }

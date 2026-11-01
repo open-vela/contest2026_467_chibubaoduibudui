@@ -1,56 +1,36 @@
+<import name="action-button" src="./action-button.ux"></import>
 <template>
   <div class="page boxing-page boxing-page-{{ screenSize }} boxing-page-{{ screenViewport }}">
-    <div class="boxing-topline">
-      <text class="boxing-session">节奏拳</text>
-      <text class="boxing-remaining">{{ boxingRemainingText }}</text>
-    </div>
-
+    <div class="boxing-topline"><text class="boxing-session">节奏拳</text><text class="boxing-remaining">{{ boxingRemainingText }}</text></div>
     <div class="boxing-stats boxing-stats-{{ screenViewport }}">
-      <div class="boxing-stat">
-        <text class="boxing-stat-label">得分</text>
-        <text class="boxing-stat-value">{{ boxingScoreText }}</text>
-      </div>
-      <div class="boxing-stat">
-        <text class="boxing-stat-label">连击</text>
-        <text class="boxing-stat-value boxing-streak-value {{ boxingComboClass }}">{{ boxingStreakText }}</text>
-      </div>
+      <div class="boxing-stat"><text class="boxing-stat-label">得分</text><text class="boxing-stat-value">{{ boxingScoreText }}</text></div>
+      <div class="boxing-stat"><text class="boxing-stat-label">连击</text><text class="boxing-stat-value boxing-streak-value {{ boxingComboClass }}">{{ boxingStreakText }}</text></div>
     </div>
-
     <div class="fighter-slot fighter-slot-{{ screenSize }} fighter-slot-{{ screenViewport }}"></div>
-    <div class="fighter-center-layer">
-      <div class="fighter-stage fighter-stage-{{ screenSize }} fighter-stage-{{ screenViewport }} {{ boxingTargetClass }}" onclick="simulatePunch">
-        <div class="impact-wave impact-wave-{{ screenViewport }} impact-wave-one {{ boxingTargetClass }}-wave"></div>
-        <div class="impact-wave impact-wave-{{ screenViewport }} impact-wave-two {{ boxingTargetClass }}-wave"></div>
-        <div class="fighter-anchor fighter-anchor-{{ screenViewport }}">
-          <div class="fighter fighter-{{ screenViewport }} {{ boxingTargetClass }}-fighter">
-            <div class="fighter-head fighter-head-{{ screenViewport }} {{ boxingTargetClass }}-head"></div>
-            <div class="fighter-body fighter-body-{{ screenViewport }} {{ boxingTargetClass }}-body"></div>
-            <div class="fighter-arm fighter-arm-{{ screenViewport }} fighter-arm-left fighter-arm-left-{{ screenViewport }} {{ boxingTargetClass }}-arm-left"></div>
-            <div class="fighter-arm fighter-arm-{{ screenViewport }} fighter-arm-right fighter-arm-right-{{ screenViewport }} {{ boxingTargetClass }}-arm-right"></div>
-            <div class="fighter-fist fighter-fist-{{ screenViewport }} fighter-fist-left fighter-fist-left-{{ screenViewport }} {{ boxingTargetClass }}-fist-left"></div>
-            <div class="fighter-fist fighter-fist-{{ screenViewport }} fighter-fist-right fighter-fist-right-{{ screenViewport }} {{ boxingTargetClass }}-fist-right"></div>
-            <div class="fighter-leg fighter-leg-{{ screenViewport }} fighter-leg-left fighter-leg-left-{{ screenViewport }} {{ boxingTargetClass }}-leg-left"></div>
-            <div class="fighter-leg fighter-leg-{{ screenViewport }} fighter-leg-right fighter-leg-right-{{ screenViewport }} {{ boxingTargetClass }}-leg-right"></div>
-          </div>
+    <div class="fighter-center-layer" style="height: {{ screenCanvasHeight }}px;">
+      <div class="fighter-stage fighter-stage-{{ screenSize }} fighter-stage-{{ screenViewport }} {{ boxingTargetClass }}">
+        <div class="impact-layer"><div class="impact-wave impact-wave-{{ screenSize }} impact-wave-{{ screenViewport }} impact-wave-one {{ motionClass === 'motion-reduced' ? 'still-wave' : boxingTargetClass + '-wave' }}"></div></div>
+        <div class="impact-layer"><div class="impact-wave impact-wave-{{ screenSize }} impact-wave-{{ screenViewport }} impact-wave-two {{ motionClass === 'motion-reduced' ? 'still-wave' : boxingTargetClass + '-wave' }}"></div></div>
+        <div class="impact-layer"><div class="impact-wave impact-wave-{{ screenSize }} impact-wave-{{ screenViewport }} impact-wave-three {{ motionClass === 'motion-reduced' ? 'still-wave' : boxingTargetClass + '-wave' }}"></div></div>
+        <div class="impact-layer"><div class="impact-wave impact-wave-{{ screenSize }} impact-wave-{{ screenViewport }} impact-wave-four {{ motionClass === 'motion-reduced' ? 'still-wave' : boxingTargetClass + '-wave' }}"></div></div>
+        <div class="impact-layer"><div class="impact-wave impact-wave-{{ screenSize }} impact-wave-{{ screenViewport }} impact-wave-five {{ motionClass === 'motion-reduced' ? 'still-wave' : boxingTargetClass + '-wave' }}"></div></div>
+        <div class="fighter-anchor fighter-anchor-{{ screenSize }} fighter-anchor-{{ screenViewport }}">
+          <image class="fighter fighter-{{ screenSize }} fighter-{{ screenViewport }} {{ boxingTargetClass }}-fighter" src="{{ fighterFrameSrc }}" object-fit="contain"></image>
         </div>
       </div>
     </div>
-
-    <text class="boxing-prompt boxing-prompt-{{ screenViewport }}">{{ boxingPrompt }}</text>
+    <text class="boxing-prompt boxing-prompt-{{ screenSize }} boxing-prompt-{{ screenViewport }}">{{ boxingPrompt }}</text>
     <text class="boxing-pace">{{ boxingPaceLabel }}</text>
-    <text if="{{ boxingMessage }}" class="boxing-message">{{ boxingMessage }}</text>
-    <div if="{{ boxingFallback }}" class="simulate-button simulate-button-{{ screenViewport }}" onclick="simulatePunch">
-      <text class="simulate-text">点击模拟出拳</text>
-    </div>
-    <div class="stop-button stop-button-{{ screenViewport }} boxing-stop boxing-stop-{{ screenViewport }}" onclick="stopBoxing">
-      <text class="stop-text">结束训练</text>
-    </div>
+    <text class="boxing-message">{{ boxingMessage }}</text>
+    <div class="stop-button stop-button-{{ screenViewport }} boxing-stop boxing-stop-{{ screenViewport }}"><action-button label="结束并返回首页" motion-class="{{ motionClass }}" onactivate="stopBoxing"></action-button></div>
   </div>
 </template>
-
 <script>
 export default {
+  onReady() { console.log('WRIST_VIEW ' + JSON.stringify({ view: 'boxing', timestamp: Date.now(), remaining: this.boxingRemainingText, score: this.boxingScoreText, streak: this.boxingStreakText })); },
   props: {
+    screenCanvasHeight: { type: Number, default: 480 },
+    motionClass: { type: String, default: 'motion-full' },
     screenSize: { type: String, default: 'regular' },
     screenViewport: { type: String, default: 'normal' },
     boxingRemainingText: { type: String, default: '30' },
@@ -60,564 +40,67 @@ export default {
     boxingPrompt: { type: String, default: '准备' },
     boxingPaceLabel: { type: String, default: '' },
     boxingTargetClass: { type: String, default: 'target-waiting' },
-    boxingFallback: { type: Boolean, default: false },
+    fighterFrameSrc: { type: String, default: '/common/training-8a8ab3423b8f/guard-00.png' },
     boxingMessage: { type: String, default: '' },
   },
-  simulatePunch() { this.$emit('simulatePunch'); },
   stopBoxing() { this.$emit('stopBoxing'); },
 };
 </script>
-
-<style>
-.page {
-  width: 100%;
-  height: 100%;
-  flex-direction: column;
-  align-items: center;
-}
-
-.boxing-page {
-  position: relative;
-  padding-top: 26px;
-}
-
-.boxing-topline {
-  width: 240px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.boxing-session {
-  font-size: 22px;
-  font-weight: 700;
-  color: #f3f6f5;
-}
-
-.boxing-remaining {
-  margin-top: 1px;
-  font-size: 20px;
-  font-weight: 700;
-  color: #f8fafc;
-}
-
-.boxing-stats {
-  width: 246px;
-  height: 44px;
-  margin-top: 4px;
-  flex-direction: row;
-  justify-content: space-around;
-}
-
-.boxing-stat {
-  width: 120px;
-  flex-direction: column;
-  align-items: center;
-}
-
-.boxing-stat-label {
-  font-size: 11px;
-  color: #8d91bd;
-}
-
-.boxing-stat-value {
-  font-size: 23px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.combo-calm {
-  color: #fda4af;
-}
-
-.combo-hot {
-  color: #fbbf24;
-}
-
-.fighter-slot {
-  width: 210px;
-  height: 210px;
-  margin-top: 5px;
-}
-
-.fighter-center-layer {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
-}
-
-.fighter-stage {
-  position: relative;
-  width: 210px;
-  height: 210px;
-  margin-top: 0;
-  border-width: 1px;
-  border-color: #343a74;
-  border-radius: 105px;
-  justify-content: center;
-  align-items: center;
-  background-color: #11152e;
-}
-
-.impact-wave {
-  position: absolute;
-  left: 34px;
-  top: 34px;
-  width: 140px;
-  height: 140px;
-  border-width: 2px;
-  border-color: #fb7185;
-  border-radius: 70px;
-  opacity: 0;
-}
-
-.impact-wave-two {
-  left: 19px;
-  top: 19px;
-  width: 170px;
-  height: 170px;
-  border-radius: 85px;
-}
-
-.target-hit-wave {
-  animation-name: impact-expand;
-  animation-duration: 500ms;
-  animation-timing-function: ease-out;
-  animation-iteration-count: 1;
-}
-
-.impact-wave-two.target-hit-wave {
-  animation-delay: 90ms;
-}
-
-.fighter-anchor {
-  position: relative;
-  width: 104px;
-  height: 164px;
-}
-
-.fighter {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 104px;
-  height: 164px;
-  transform-origin: center center;
-  animation-name: fighter-enter;
-  animation-duration: 420ms;
-  animation-timing-function: ease-out;
-  animation-iteration-count: 1;
-}
-
-.fighter-head {
-  position: absolute;
-  left: 35px;
-  top: 4px;
-  width: 34px;
-  height: 34px;
-  border-width: 3px;
-  border-color: #fda4af;
-  border-radius: 17px;
-  background-color: #2a142b;
-}
-
-.fighter-body {
-  position: absolute;
-  left: 40px;
-  top: 42px;
-  width: 24px;
-  height: 66px;
-  border-width: 3px;
-  border-color: #fda4af;
-  border-radius: 12px;
-  background-color: #fb7185;
-}
-
-.fighter-arm {
-  position: absolute;
-  top: 50px;
-  width: 50px;
-  height: 12px;
-  border-radius: 6px;
-  background-color: #fb7185;
-  transform-origin: center center;
-  transition-property: transform, background-color, opacity;
-  transition-duration: 280ms;
-  transition-timing-function: ease-in-out;
-}
-
-.fighter-arm-left {
-  left: 3px;
-  transform: rotate(28deg);
-}
-
-.fighter-arm-right {
-  left: 52px;
-  transform: rotate(-28deg);
-}
-
-.fighter-fist {
-  position: absolute;
-  top: 45px;
-  width: 20px;
-  height: 20px;
-  border-width: 2px;
-  border-color: #fda4af;
-  border-radius: 10px;
-  background-color: #7f2d4d;
-  transform-origin: center center;
-  transition-property: transform, opacity, background-color;
-  transition-duration: 280ms;
-  transition-timing-function: ease-in-out;
-}
-
-.fighter-fist-left {
-  left: 0;
-}
-
-.fighter-fist-right {
-  left: 84px;
-}
-
-.fighter-leg {
-  position: absolute;
-  top: 100px;
-  width: 14px;
-  height: 62px;
-  border-radius: 7px;
-  background-color: #c45b77;
-  transform-origin: center top;
-}
-
-.fighter-leg-left {
-  left: 32px;
-  transform: rotate(12deg);
-}
-
-.fighter-leg-right {
-  left: 58px;
-  transform: rotate(-12deg);
-}
-
-.target-active-arm-right {
-  background-color: #fbbf24;
-  transform: rotate(-44deg) scaleX(1.08);
-}
-
-.target-active-fist-right {
-  background-color: #fbbf24;
-  transform: scale(1.16);
-}
-
-.target-active-fighter {
-  animation-name: fighter-ready;
-  animation-duration: 360ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
-}
-
-.target-hit-fighter {
-  animation-name: fighter-strike;
-  animation-duration: 460ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: 1;
-}
-
-.target-hit-arm-right {
-  background-color: #fb7185;
-  transform: translateX(24px) rotate(-8deg) scaleX(1.22);
-}
-
-.target-hit-fist-right {
-  background-color: #fda4af;
-  transform: translateX(30px) scale(1.25);
-}
-
-.target-missed-fighter {
-  opacity: 0.62;
-  animation-name: fighter-miss;
-  animation-duration: 360ms;
-  animation-iteration-count: 1;
-}
-
-@keyframes fighter-enter {
-  0% { transform: scale(0.9); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-enter-short {
-  0% { transform: scale(1); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-ready {
-  0% { transform: scale(1); opacity: 1; }
-  45% { transform: scale(0.96); opacity: 0.88; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-ready-short {
-  0% { transform: scale(1); opacity: 1; }
-  45% { transform: scale(1); opacity: 0.88; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-strike {
-  0% { transform: scale(0.96); opacity: 0.86; }
-  35% { transform: scale(0.98); opacity: 0.94; }
-  68% { transform: scale(1.06); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-strike-short {
-  0% { transform: scale(1); opacity: 0.86; }
-  35% { transform: scale(1); opacity: 0.94; }
-  68% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fighter-miss {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(0.94); opacity: 0.55; }
-  100% { transform: scale(1); opacity: 0.72; }
-}
-
-@keyframes fighter-miss-short {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1); opacity: 0.55; }
-  100% { transform: scale(1); opacity: 0.72; }
-}
-
-@keyframes impact-expand {
-  0% { opacity: 0.8; transform: scale(0.55); }
-  100% { opacity: 0; transform: scale(1.08); }
-}
-
-.boxing-prompt {
-  margin-top: 6px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.boxing-pace {
-  margin-top: 1px;
-  font-size: 14px;
-  color: #8d91bd;
-}
-
-.boxing-message {
-  height: 18px;
-  font-size: 13px;
-  color: #fda4af;
-}
-
-.simulate-button {
-  width: 176px;
-  height: 34px;
-  border-radius: 17px;
-  justify-content: center;
-  align-items: center;
-  border-width: 1px;
-  border-color: #9d415b;
-  background-color: #2a142b;
-}
-
-.simulate-text {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fda4af;
-}
-
-.stop-button {
-  width: 150px;
-  height: 42px;
-  margin-top: 14px;
-  border-width: 1px;
-  border-color: #49345f;
-  border-radius: 21px;
-  justify-content: center;
-  align-items: center;
-  background-color: #18142f;
-}
-
-.stop-text {
-  font-size: 14px;
-  color: #a7a9c7;
-}
-
-.boxing-stop {
-  height: 36px;
-  margin-top: 4px;
-}
-
-/* 小尺寸设备优先保证操作区和底部按钮完整可见。 */
-.boxing-page-compact {
-  padding-top: 20px;
-}
-
-.fighter-stage-compact {
-  width: 190px;
-  height: 190px;
-  border-radius: 95px;
-}
-
-.fighter-slot-compact {
-  width: 190px;
-  height: 190px;
-}
-
-/* 短视口压缩纵向节奏，确保圆屏主操作始终可见。 */
-.boxing-page-short {
-  padding-top: 8px;
-}
-
-.boxing-stats-short {
-  height: 38px;
-  margin-top: 1px;
-}
-
-.fighter-stage-short {
-  width: 110px;
-  height: 110px;
-  margin-top: 0;
-  border-radius: 55px;
-}
-
-.fighter-slot-short {
-  width: 110px;
-  height: 110px;
-  margin-top: 1px;
-}
-
-.fighter-short {
-  width: 60px;
-  height: 95px;
-  transform: scale(1);
-}
-
-.fighter-anchor-short {
-  width: 60px;
-  height: 95px;
-}
-
-.fighter-head-short {
-  left: 20px;
-  top: 2px;
-  width: 20px;
-  height: 20px;
-  border-width: 2px;
-  border-radius: 10px;
-}
-
-.fighter-body-short {
-  left: 23px;
-  top: 24px;
-  width: 14px;
-  height: 38px;
-  border-width: 2px;
-  border-radius: 7px;
-}
-
-.fighter-arm-short {
-  top: 29px;
-  width: 29px;
-  height: 7px;
-  border-radius: 4px;
-}
-
-.fighter-arm-left-short {
-  left: 2px;
-}
-
-.fighter-arm-right-short {
-  left: 30px;
-}
-
-.fighter-fist-short {
-  top: 26px;
-  width: 12px;
-  height: 12px;
-  border-width: 1px;
-  border-radius: 6px;
-}
-
-.fighter-fist-left-short {
-  left: 0;
-}
-
-.fighter-fist-right-short {
-  left: 48px;
-}
-
-.fighter-leg-short {
-  top: 58px;
-  width: 8px;
-  height: 36px;
-  border-radius: 4px;
-}
-
-.fighter-leg-left-short {
-  left: 19px;
-}
-
-.fighter-leg-right-short {
-  left: 34px;
-}
-
-.target-hit-arm-right.fighter-arm-right-short {
-  transform: translateX(14px) rotate(-8deg) scaleX(1.22);
-}
-
-.target-hit-fist-right.fighter-fist-right-short {
-  transform: translateX(17px) scale(1.25);
-}
-
-.fighter.fighter-short {
-  animation-name: fighter-enter-short;
-  animation-iteration-count: 1;
-}
-
-.target-active-fighter.fighter-short {
-  animation-name: fighter-ready-short;
-  animation-iteration-count: 1;
-}
-
-.target-hit-fighter.fighter-short {
-  animation-name: fighter-strike-short;
-  animation-iteration-count: 1;
-}
-
-.target-missed-fighter.fighter-short {
-  animation-name: fighter-miss-short;
-  animation-iteration-count: 1;
-}
-
-.impact-wave-short {
-  display: none;
-}
-
-.boxing-prompt-short {
-  margin-top: 1px;
-  font-size: 22px;
-}
-
-.simulate-button-short {
-  height: 26px;
-}
-
-.stop-button-short {
-  height: 32px;
-  margin-top: 4px;
-}
-
-.boxing-stop-short {
-  height: 28px;
-  margin-top: 1px;
-}
+<style lang="scss">
+@use '../../../common/prism' as p;
+.page { @include p.page; }
+.boxing-page { position: relative; padding-top: 26px; background-color: p.$canvas; }
+.boxing-topline { width: 240px; flex-direction: column; justify-content: center; align-items: center; }
+.boxing-session { font-size: 22px; font-weight: 700; color: p.$text; }
+.boxing-remaining { margin-top: 1px; font-size: 20px; font-weight: 700; color: p.$text; }
+.boxing-stats { width: 246px; height: 44px; margin-top: 4px; flex-direction: row; justify-content: space-around; }
+.boxing-stat { width: 120px; flex-direction: column; align-items: center; }
+.boxing-stat-label { font-size: 11px; color: p.$muted; }
+.boxing-stat-value { font-size: 23px; font-weight: 700; color: p.$text; }
+.combo-calm { color: p.$violet; }
+.combo-hot { color: p.$amber; }
+.fighter-slot { width: 210px; height: 210px; margin-top: 5px; }
+.fighter-center-layer { position: absolute; left: 0; top: 0; width: 480px; height: 480px; justify-content: center; align-items: center; }
+.fighter-stage { position: relative; width: 210px; height: 210px; margin-top: 0; border-width: 1px; border-color: p.$line; border-radius: 105px; justify-content: center; align-items: center; background-color: p.$surface; }
+.impact-layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; justify-content: center; align-items: center; }
+/* Fixed geometry prevents mirror-origin drift. Pulses wait for arm extension. */
+.impact-wave { width: 32px; height: 32px; border-width: 2px; border-color: p.$violet; border-radius: 100px; opacity: 0; animation-delay: 120ms; }
+.impact-wave-two { width: 70px; height: 70px; animation-delay: 175ms; }
+.impact-wave-three { width: 112px; height: 112px; animation-delay: 230ms; }
+.impact-wave-four { width: 160px; height: 160px; animation-delay: 285ms; }
+.impact-wave-five { width: 200px; height: 200px; animation-delay: 340ms; }
+.impact-wave-five.impact-wave-compact { width: 184px; height: 184px; }
+.target-hit-wave { animation-name: impact-expand; animation-duration: 180ms; animation-timing-function: ease-out; animation-iteration-count: 1; }
+.target-active-wave { border-color: p.$amber; animation-name: beat-expand; animation-duration: 180ms; animation-timing-function: ease-out; animation-iteration-count: 1; }
+.fighter-anchor { width: 210px; height: 180px; justify-content: center; align-items: center; }
+.fighter { width: 210px; height: 180px; }
+.target-missed-fighter { opacity: 0.62; }
+@keyframes impact-expand { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+@keyframes beat-expand { 0% { opacity: 0.5; } 100% { opacity: 0; } }
+.boxing-prompt { margin-top: 6px; font-size: 24px; font-weight: 700; color: p.$text; }
+.boxing-pace { margin-top: 1px; font-size: 14px; color: p.$muted; }
+.boxing-message { height: 18px; font-size: 13px; color: p.$violet; }
+.stop-button { @include p.action-slot; margin-top: 14px; }
+.boxing-stop { height: p.$touch-height; margin-top: 4px; }
+.boxing-page-compact { padding-top: 20px; }
+.fighter-stage-compact { width: 190px; height: 190px; border-radius: 95px; }
+.fighter-slot-compact { width: 190px; height: 190px; }
+.fighter-anchor-compact { width: 190px; height: 163px; }
+.fighter-compact { width: 190px; height: 163px; }
+.boxing-page-short { padding-top: 8px; }
+.boxing-stats-short { height: 38px; margin-top: 1px; }
+.fighter-stage-short { width: 110px; height: 110px; margin-top: 0; border-radius: 55px; }
+.fighter-slot-short { width: 110px; height: 110px; margin-top: 1px; }
+.fighter-anchor-short { width: 110px; height: 94px; }
+.fighter-short { width: 110px; height: 94px; }
+.impact-wave-short { width: 14px; height: 14px; }
+.impact-wave-two.impact-wave-short { width: 30px; height: 30px; }
+.impact-wave-three.impact-wave-short { width: 50px; height: 50px; }
+.impact-wave-four.impact-wave-short { width: 78px; height: 78px; }
+.impact-wave-five.impact-wave-short { width: 104px; height: 104px; }
+.boxing-prompt-short { margin-top: 1px; font-size: 22px; }
+.stop-button-short { height: p.$touch-height; margin-top: 4px; }
+.boxing-stop-short { height: p.$touch-height; margin-top: 1px; }
+.boxing-prompt-compact { margin-top: 8px; }
+@include p.still('.still-wave');
 </style>

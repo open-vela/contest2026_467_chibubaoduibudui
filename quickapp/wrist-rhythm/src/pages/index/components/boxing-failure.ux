@@ -1,0 +1,36 @@
+<template>
+  <div class="page failure-page failure-page-{{ screenSize }} failure-page-{{ screenViewport }}">
+    <text class="failure-kicker">节奏拳 · 未完成</text>
+    <text class="failure-title">训练已中断</text>
+    <text class="failure-reason">{{ boxingFailureReason }}</text>
+    <text class="failure-note">本局不生成完成成绩</text>
+    <div class="failure-button" onclick="retryBoxing"><text class="retry-label">重试</text></div>
+    <div class="failure-back" onclick="returnHome"><text class="back-label">返回首页</text></div>
+  </div>
+</template>
+<script>
+export default {
+  onReady() { console.log('WRIST_VIEW ' + JSON.stringify({ view: 'boxingFailure', timestamp: Date.now() })); },
+  props: {
+    screenSize: { type: String, default: 'regular' },
+    screenViewport: { type: String, default: 'normal' },
+    boxingFailureReason: { type: String, default: '' },
+  },
+  retryBoxing() { this.$emit('retryBoxing'); },
+  returnHome() { this.$emit('returnHome'); },
+};
+</script>
+<style>
+.page { width: 100%; height: 100%; flex-direction: column; align-items: center; background-color: #080b1d; }
+.failure-page { padding-top: 82px; }
+.failure-kicker { font-size: 16px; color: #fda4af; }
+.failure-title { margin-top: 14px; font-size: 28px; font-weight: 700; color: #f8fafc; }
+.failure-reason { width: 290px; height: 46px; margin-top: 15px; text-align: center; font-size: 18px; color: #f8fafc; }
+.failure-note { font-size: 14px; color: #8d91bd; }
+.failure-button { width: 220px; height: 56px; margin-top: 24px; border-width: 1px; border-color: #9d415b; border-radius: 28px; align-items: center; justify-content: center; background-color: #2a142b; }
+.retry-label { font-size: 23px; font-weight: 700; color: #fda4af; }
+.failure-back { width: 180px; height: 44px; margin-top: 10px; border-width: 1px; border-color: #49345f; border-radius: 22px; align-items: center; justify-content: center; background-color: #18142f; }
+.back-label { font-size: 17px; color: #f8fafc; }
+.failure-page-compact { padding-top: 65px; }
+.failure-page-short { padding-top: 28px; }
+</style>

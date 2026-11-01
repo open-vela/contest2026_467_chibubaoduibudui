@@ -1,0 +1,63 @@
+<template>
+  <div class="action action-{{ tone }} action-{{ kind }} {{ pressed ? 'action-pressed' : '' }} {{ selected ? 'action-selected' : '' }} {{ disabled || busy ? 'action-disabled' : '' }} {{ motionClass === 'motion-reduced' ? 'action-still' : '' }}" ontouchstart="press" ontouchend="release" ontouchcancel="release" onclick="activate">
+    <text if="{{ detail }}" class="action-detail detail-{{ tone }}">{{ detail }}</text>
+    <text class="action-label label-{{ tone }} label-{{ kind }}">{{ busy ? '处理中…' : label }}</text>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    label: { type: String, default: '' },
+    detail: { type: String, default: '' },
+    tone: { type: String, default: 'quiet' },
+    kind: { type: String, default: 'secondary' },
+    motionClass: { type: String, default: 'motion-full' },
+    selected: { type: Boolean, default: false },
+    disabled: { type: Boolean, default: false },
+    busy: { type: Boolean, default: false },
+  },
+  private: { pressed: false },
+  press() { if (!this.disabled && !this.busy) this.pressed = true; },
+  release() { this.pressed = false; },
+  activate() {
+    this.pressed = false;
+    if (!this.disabled && !this.busy) this.$emit('activate');
+  },
+};
+</script>
+
+<style lang="scss">
+@use '../../../common/prism' as p;
+.action {
+  width: 100%;
+  height: 100%;
+  padding: 0 14px;
+  border-width: 1px;
+  border-color: p.$line;
+  border-radius: p.$radius-card;
+  background-color: p.$surface;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition-property: background-color, border-color;
+  transition-duration: p.$feedback;
+  transition-timing-function: ease-out;
+}
+.action-ice { border-color: p.$ice-line; background-color: p.$ice-surface; }
+.action-violet { border-color: p.$violet-line; background-color: p.$violet-surface; }
+.action-mode { align-items: flex-start; }
+.action-primary { border-radius: 26px; }
+.action-quiet { border-radius: 22px; border-color: #738497; }
+.action-pressed { background-color: #344355; border-color: p.$ice; }
+.action-selected { border-color: p.$ice; background-color: p.$ice-surface; }
+.action-disabled { opacity: 0.48; }
+.action-still { transition-duration: 0ms; }
+.action-detail { font-size: 11px; color: p.$muted; }
+.action-label { font-size: 14px; font-weight: 600; color: p.$text; }
+.label-mode { margin-top: 2px; font-size: 20px; font-weight: 700; }
+.label-primary { font-size: 22px; font-weight: 700; }
+.label-preference { font-size: 12px; }
+.label-ice, .detail-ice { color: p.$ice; }
+.label-violet, .detail-violet { color: p.$violet; }
+</style>

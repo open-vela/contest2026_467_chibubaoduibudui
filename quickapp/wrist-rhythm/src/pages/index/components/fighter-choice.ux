@@ -1,0 +1,60 @@
+<template>
+  <div class="page choice-page choice-page-{{ screenSize }} choice-page-{{ screenViewport }}">
+    <text class="choice-kicker">节奏拳</text>
+    <text class="choice-title">选择你的拳手</text>
+    <div class="choice-cards choice-cards-{{ screenViewport }} {{ fighterChoiceBusy ? 'choice-busy' : '' }}">
+      <div class="choice-card choice-card-{{ screenViewport }} male-card" onclick="chooseMale">
+        <image class="choice-preview choice-preview-{{ screenViewport }}" src="{{ malePreviewSrc }}" object-fit="contain"></image>
+        <text class="choice-name">男拳手</text>
+        <text class="choice-tap">点击选择</text>
+      </div>
+      <div class="choice-card choice-card-{{ screenViewport }} female-card" onclick="chooseFemale">
+        <image class="choice-preview choice-preview-{{ screenViewport }}" src="{{ femalePreviewSrc }}" object-fit="contain"></image>
+        <text class="choice-name">女拳手</text>
+        <text class="choice-tap">点击选择</text>
+      </div>
+    </div>
+    <text class="choice-message">{{ fighterChoiceMessage }}</text>
+    <text class="choice-note">仅用于匹配人物形象</text>
+    <div class="choice-back" onclick="cancelFighterChoice"><text class="choice-back-label">返回首页</text></div>
+  </div>
+</template>
+<script>
+export default {
+  onReady() { console.log('WRIST_VIEW ' + JSON.stringify({ view: 'fighterChoice', timestamp: Date.now() })); },
+  props: {
+    screenSize: { type: String, default: 'regular' },
+    screenViewport: { type: String, default: 'normal' },
+    fighterChoiceBusy: { type: Boolean, default: false },
+    fighterChoiceMessage: { type: String, default: '' },
+    malePreviewSrc: { type: String, default: '' },
+    femalePreviewSrc: { type: String, default: '' },
+  },
+  chooseMale() { if (!this.fighterChoiceBusy) this.$emit('chooseMale'); },
+  chooseFemale() { if (!this.fighterChoiceBusy) this.$emit('chooseFemale'); },
+  cancelFighterChoice() { this.$emit('cancelFighterChoice'); },
+};
+</script>
+<style>
+.page { width: 100%; height: 100%; flex-direction: column; align-items: center; }
+.choice-page { padding-top: 58px; background-color: #080b10; }
+.choice-kicker { font-size: 14px; color: #adb8c8; }
+.choice-title { margin-top: 5px; font-size: 25px; font-weight: 700; color: #f3f6f5; }
+.choice-cards { margin-top: 18px; width: 264px; height: 174px; flex-direction: row; justify-content: space-between; }
+.choice-card { width: 124px; height: 174px; border-width: 1px; border-radius: 22px; flex-direction: column; align-items: center; justify-content: center; }
+.male-card { border-color: #427c92; background-color: #101e29; }
+.female-card { border-color: #8a79bf; background-color: #1e1932; }
+.choice-busy { opacity: 0.45; }
+.choice-preview { width: 120px; height: 103px; }
+.choice-name { margin-top: 5px; font-size: 19px; font-weight: 700; color: #f8fafc; }
+.choice-tap { margin-top: 4px; font-size: 12px; color: #c5d6e5; }
+.choice-message { width: 300px; height: 22px; text-align: center; margin-top: 16px; font-size: 14px; color: #e3dbf7; }
+.choice-note { margin-top: 3px; font-size: 12px; color: #adb8c8; }
+.choice-back { width: 150px; height: 44px; margin-top: 13px; border-width: 1px; border-color: #455466; border-radius: 22px; align-items: center; justify-content: center; background-color: #121a24; }
+.choice-back-label { font-size: 15px; color: #f5f7fb; }
+.choice-page-compact { padding-top: 50px; }
+.choice-page-short { padding-top: 28px; }
+.choice-cards-short { height: 144px; margin-top: 10px; }
+.choice-card-short { height: 144px; }
+.choice-preview-short { width: 105px; height: 90px; }
+</style>

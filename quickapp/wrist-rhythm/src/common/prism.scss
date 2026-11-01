@@ -1,0 +1,102 @@
+// Compile-time tokens: the watch receives ordinary supported CSS, never CSS vars.
+$canvas: #080b10;
+$surface: #121922;
+$raised: #1a2430;
+$line: #3b4959;
+$text: #f4f7fb;
+$muted: #a3b1c4;
+$ice: #9bdcfa;
+$ice-line: #6594aa;
+$ice-surface: #152b39;
+$violet: #c4b5fd;
+$violet-bright: #ac96ed;
+$violet-line: #8a79b1;
+$violet-surface: #211e30;
+$amber: #fbbf24;
+$feedback: 180ms;
+$reveal: 320ms;
+$signal: 640ms;
+$radius-card: 18px;
+$touch-height: 48px;
+
+@mixin page {
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+@mixin panel {
+  border-width: 1px;
+  border-color: $line;
+  border-radius: $radius-card;
+  background-color: $surface;
+}
+
+@mixin action-slot($width: 164px, $height: $touch-height) {
+  width: $width;
+  height: $height;
+}
+
+@mixin dial {
+  border-width: 1px;
+  border-color: $line;
+  background-color: $raised;
+  background: linear-gradient(135deg, #293747 0%, #121922 48%, #26283b 100%);
+  justify-content: center;
+  align-items: center;
+}
+
+// Twelve quiet metal indices. No image or hardware specification is implied.
+@mixin indices {
+  .dial-indices {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .dial-index {
+    position: absolute;
+    width: 2px;
+    height: 5px;
+    background-color: #738497;
+    border-radius: 1px;
+  }
+  // Coordinates are explicit: the contest image cannot rely on transform origin.
+  .index-0 { left: 121px; top: 5px; height: 7px; background-color: $ice; }
+  .index-1 { left: 179px; top: 20px; transform: rotate(30deg); }
+  .index-2 { left: 221px; top: 63px; transform: rotate(60deg); }
+  .index-3 { left: 237px; top: 120px; transform: rotate(90deg); background-color: $violet; }
+  .index-4 { left: 221px; top: 178px; transform: rotate(120deg); }
+  .index-5 { left: 179px; top: 221px; transform: rotate(150deg); }
+  .index-6 { left: 121px; top: 237px; transform: rotate(180deg); }
+  .index-7 { left: 63px; top: 221px; transform: rotate(210deg); }
+  .index-8 { left: 21px; top: 178px; transform: rotate(240deg); }
+  .index-9 { left: 5px; top: 120px; transform: rotate(90deg); background-color: $ice; }
+  .index-10 { left: 21px; top: 63px; transform: rotate(300deg); }
+  .index-11 { left: 63px; top: 20px; transform: rotate(330deg); }
+}
+
+@mixin still($selector, $visible: false) {
+  $name: prism-still-hidden;
+  @if $visible { $name: prism-still-visible; }
+  #{$selector} {
+    // The contest image logs an error for animation-name:none. Use a constant
+    // one-shot frame with no geometry or brightness change instead.
+    animation-name: $name;
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+  }
+  @keyframes #{$name} {
+    @if $visible {
+      0% { opacity: 1; }
+      100% { opacity: 1; }
+    } @else {
+      0% { opacity: 0; }
+      100% { opacity: 0; }
+    }
+  }
+}

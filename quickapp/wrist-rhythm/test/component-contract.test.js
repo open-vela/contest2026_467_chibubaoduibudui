@@ -1,27 +1,36 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const sass = require('module').createRequire(require.resolve('@aiot-toolkit/parser/package.json'))('sass');
 
 const pageDirectory = path.join(__dirname, '..', 'src', 'pages', 'index');
 const componentDirectory = path.join(pageDirectory, 'components');
+
 
 const contracts = [
   {
     file: 'home.ux',
     tag: 'home-view',
     props: [
-      'screenSize', 'screenViewport', 'suggest', 'vitalPulseClass', 'statusTitle',
+      'motionClass', 'screenSize', 'screenViewport', 'suggest', 'vitalPulseClass', 'statusTitle',
       'statusSubtitle', 'heartRateText', 'stressText', 'healthMessage',
     ],
     events: { startTraining: 'startTraining', startBoxing: 'startBoxing' },
-    parentEvents: { 'onstart-training': 'startTraining', 'onstart-boxing': 'startBoxing' },
+    parentEvents: { 'onstart-training': 'startTraining', 'onstart-boxing': 'requestBoxing' },
+  },
+  {
+    file: 'fighter-choice.ux',
+    tag: 'fighter-choice-view',
+    props: ['screenSize', 'screenViewport', 'fighterChoiceBusy', 'fighterChoiceMessage', 'malePreviewSrc', 'femalePreviewSrc'],
+    events: { chooseMale: 'chooseMale', chooseFemale: 'chooseFemale', cancelFighterChoice: 'cancelFighterChoice' },
+    parentEvents: { 'onchoose-male': 'chooseMale', 'onchoose-female': 'chooseFemale', 'oncancel-fighter-choice': 'cancelFighterChoice' },
   },
   {
     file: 'breathing.ux',
     tag: 'breathing-view',
     props: [
-      'screenSize', 'screenViewport', 'remainingText',
-      'breathPhase', 'breathRhythmClass', 'phaseLabel', 'patternLabel',
+      'motionClass', 'screenSize', 'screenViewport', 'remainingText',
+      'breathPhase', 'breathRhythmClass', 'breathFrameSrc', 'phaseLabel', 'patternLabel', 'patternReason',
     ],
     events: { stopTraining: 'stopTraining' },
     parentEvents: { 'onstop-training': 'stopTraining' },
@@ -30,7 +39,7 @@ const contracts = [
     file: 'steady-result.ux',
     tag: 'steady-result-view',
     props: [
-      'screenSize', 'screenViewport', 'resultHeartRateDetail',
+      'motionClass', 'screenSize', 'screenViewport', 'resultHeartRateDetail',
       'resultHeartRateDelta', 'resultStressDetail', 'resultStressDelta',
       'heartRateImproved', 'stressImproved',
     ],
@@ -41,22 +50,30 @@ const contracts = [
     file: 'boxing.ux',
     tag: 'boxing-view',
     props: [
-      'screenSize', 'screenViewport', 'boxingRemainingText',
+      'screenCanvasHeight', 'motionClass', 'screenSize', 'screenViewport', 'boxingRemainingText',
       'boxingScoreText', 'boxingStreakText', 'boxingComboClass', 'boxingPrompt', 'boxingPaceLabel',
-      'boxingTargetClass', 'boxingFallback', 'boxingMessage',
+      'boxingTargetClass', 'fighterFrameSrc', 'boxingMessage',
     ],
-    events: { simulatePunch: 'simulatePunch', stopBoxing: 'stopBoxing' },
-    parentEvents: { 'onsimulate-punch': 'simulatePunch', 'onstop-boxing': 'stopBoxing' },
+    events: { stopBoxing: 'stopBoxing' },
+    parentEvents: { 'onstop-boxing': 'stopBoxing' },
   },
   {
     file: 'boxing-result.ux',
     tag: 'boxing-result-view',
     props: [
-      'screenSize', 'screenViewport', 'boxingResultScore',
+      'motionClass', 'screenSize', 'screenViewport', 'boxingResultScore',
       'boxingResultHits', 'boxingResultStreak', 'boxingResultHeartRate',
+      'boxingResultStress',
     ],
     events: { returnHome: 'returnHome' },
     parentEvents: { 'onreturn-home': 'returnHome' },
+  },
+  {
+    file: 'boxing-failure.ux',
+    tag: 'boxing-failure-view',
+    props: ['screenSize', 'screenViewport', 'boxingFailureReason'],
+    events: { retryBoxing: 'retryBoxing', returnHome: 'returnHome' },
+    parentEvents: { 'onretry-boxing': 'retryBoxing', 'onreturn-home': 'returnHome' },
   },
 ];
 
@@ -116,14 +133,24 @@ function templateBindings(template) {
   return bindings;
 }
 
+const compiledStyles = new Map();
+function compiledStyle(source) {
+  if (!compiledStyles.has(source)) {
+    const style = source.match(/<style(?: lang="(scss)")?>([\s\S]*?)<\/style>/);
+    assert(style, 'component style block is required');
+    compiledStyles.set(source, style[1] === 'scss'
+      ? sass.compileString(style[2], { loadPaths: [componentDirectory, pageDirectory], charset: false }).css
+      : style[2]);
+  }
+  return compiledStyles.get(source);
+}
+
 function styleDeclarations(source, selector) {
-  const style = source.match(/<style>([\s\S]*?)<\/style>/);
-  assert(style, 'component style block is required');
-  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const rule = style[1].match(new RegExp(`${escapedSelector}\\s*\\{([\\s\\S]*?)\\}`));
-  assert(rule, `${selector} style rule is required`);
+  const rules = [...compiledStyle(source).replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .filter(rule => rule[1].split(',').some(s => s.trim() === selector));
+  assert(rules.length, `${selector} style rule is required`);
   return Object.fromEntries(
-    rule[1]
+    rules.map(rule => rule[2]).join(';')
       .split(';')
       .map((declaration) => declaration.trim())
       .filter(Boolean)
@@ -135,8 +162,8 @@ function styleDeclarations(source, selector) {
 }
 
 function styleSelectorsUsingColor(source, color) {
-  const style = source.match(/<style>([\s\S]*?)<\/style>/);
-  if (!style) return [];
+  if (!/<style(?:\s|>)/.test(source)) return [];
+  const style = [null, compiledStyle(source)];
   const stylesheet = style[1].replace(/\/\*[\s\S]*?\*\//g, '');
   const normalizedColor = color.toLowerCase();
   const selectors = [];
@@ -161,8 +188,7 @@ function uxFilesUnder(directory) {
 }
 
 function keyframeSource(source, name) {
-  const style = source.match(/<style>([\s\S]*?)<\/style>/);
-  assert(style, 'component style block is required');
+  const style = [null, compiledStyle(source)];
   const marker = `@keyframes ${name}`;
   const markerAt = style[1].indexOf(marker);
   assert.notStrictEqual(markerAt, -1, `${name} keyframes are required`);
@@ -183,7 +209,22 @@ function test(name, fn) {
   console.log(`ok - ${name}`);
 }
 
-test('五个展示组件声明完整 props 并执行六类用户事件', () => {
+test('unavailable metric labels fit independently while numeric typography stays unchanged', () => {
+  const source = componentSource('home.ux');
+  const textTags = [...source.matchAll(/<text class="metric-value ([^"]+)">\{\{ (heartRateText|stressText) \}\}/g)];
+  assert.equal(textTags.length, 2);
+  for (const [, classBinding, property] of textTags) {
+    const expression = [...classBinding.matchAll(/\{\{ ([\s\S]+?) \}\}/g)].map(m => m[1]).find(e => e.includes(property));
+    for (const value of ['待更新', '不支持', '不可用']) {
+      assert.equal(Function(property, `return ${expression}`)(value), 'metric-status');
+    }
+    assert.equal(Function(property, `return ${expression}`)('220'), '');
+  }
+  assert.equal(styleDeclarations(source, '.metric-status')['font-size'], '18px');
+  assert.equal(styleDeclarations(source, '.metric-value')['font-size'], '28px');
+});
+
+test('展示组件声明完整 props 并执行用户事件', () => {
   for (const contract of contracts) {
     const definition = componentDefinition(componentSource(contract.file));
     assert.deepStrictEqual(Object.keys(definition.props).sort(), contract.props.slice().sort());
@@ -200,7 +241,7 @@ test('父页面向每个组件传递圆屏尺寸、短视口及展示 props', ()
   for (const contract of contracts) {
     const attributes = attributesForTag(parentTemplate, contract.tag);
     for (const prop of contract.props) {
-      assert.strictEqual(attributes[kebabCase(prop)], `{{ ${prop} }}`, `${contract.tag}:${prop}`);
+      assert.strictEqual(attributes[kebabCase(prop)], prop === 'motionClass' ? 'motion-full' : `{{ ${prop} }}`, `${contract.tag}:${prop}`);
     }
     assert.strictEqual(attributes['screen-size'], '{{ screenSize }}');
     assert.strictEqual(attributes['screen-viewport'], '{{ screenViewport }}');
@@ -242,14 +283,15 @@ test('首页健康状态驱动中心生命圆环', () => {
 
   assert.strictEqual(
     orbit.class,
-    "vital-orbit vital-orbit-{{ screenViewport }} {{ suggest ? 'orbit-alert' : 'orbit-steady' }}",
+    "vital-orbit vital-orbit-{{ screenViewport === 'short' ? 'short' : screenSize }} {{ suggest ? 'orbit-alert' : 'orbit-steady' }}",
   );
 });
 
 test('首页生命仪表具有三层结构与可重触发数据脉冲', () => {
   const template = templateSource(componentSource('home.ux'));
   assert(template.includes('class="vital-orbit'));
-  assert(template.includes('class="orbit-pulse orbit-pulse-{{ screenViewport }} {{ vitalPulseClass }}"'));
+  assert(attributesForClass(template, 'orbit-pulse').class.includes('vitalPulseClass'));
+  assert(attributesForClass(template, 'orbit-pulse').class.includes('still-pulse'));
   assert(template.includes('class="orbit-ring'));
   assert(template.includes("suggest ? 'orbit-alert' : 'orbit-steady'"));
 });
@@ -270,185 +312,104 @@ test('琥珀高光只用于节奏拳当前目标与高连击作用域', () => {
   }
 });
 
-test('首页使用 B1 棱镜夜光画布、玻璃和双能量入口', () => {
+test('首页使用 棱镜夜光画布、玻璃和双能量入口', () => {
   const parent = fs.readFileSync(path.join(pageDirectory, 'index.ux'), 'utf8');
   const home = componentSource('home.ux');
 
-  assert.strictEqual(styleDeclarations(parent, '.app')['background-color'], '#080b1d');
-  assert.strictEqual(styleDeclarations(home, '.vital-orbit')['background-color'], '#111534');
-  assert.strictEqual(styleDeclarations(home, '.orbit-ring')['background-color'], '#171a40');
-  assert.strictEqual(styleDeclarations(home, '.orbit-pulse')['border-color'], '#22d3ee');
-  assert.strictEqual(styleDeclarations(home, '.steady-mode')['border-color'], '#247f96');
-  assert.strictEqual(styleDeclarations(home, '.boxing-mode')['border-color'], '#9d415b');
-  assert.strictEqual(styleDeclarations(home, '.status-dot-alert').color, '#fb7185');
-  assert.strictEqual(styleDeclarations(home, '.health-message').color, '#a7a9c7');
-  assert.strictEqual(styleDeclarations(home, '.disclaimer').color, '#8d91bd');
+  assert.strictEqual(styleDeclarations(parent, '.app')['background-color'], '#080b10');
+  assert.strictEqual(styleDeclarations(home, '.vital-orbit')['background-color'], '#1a2430');
+  assert.strictEqual(styleDeclarations(home, '.orbit-ring')['background-color'], '#121922');
+  assert.strictEqual(styleDeclarations(home, '.orbit-pulse')['border-color'], '#9bdcfa');
+  assert.strictEqual(styleDeclarations(componentSource('action-button.ux'), '.action-ice')['border-color'], '#6594aa');
+  assert.strictEqual(styleDeclarations(componentSource('action-button.ux'), '.action-violet')['border-color'], '#8a79b1');
+  assert.strictEqual(styleDeclarations(home, '.status-dot-alert').color, '#ac96ed');
+  assert.strictEqual(styleDeclarations(home, '.health-message').color, '#a3b1c4');
+  assert.strictEqual(styleDeclarations(home, '.disclaimer').color, '#a3b1c4');
 });
 
 test('组件样式不使用 openvela 不支持的后代选择器', () => {
   for (const contract of contracts) {
     const source = componentSource(contract.file);
-    const style = source.match(/<style>([\s\S]*?)<\/style>/)[1].replace(/\/\*[\s\S]*?\*\//g, '');
-    const selectors = [...style.matchAll(/([^{}]+)\{/g)].map((match) => match[1].trim());
-    assert(!selectors.some((selector) => selector.includes(' ') && !selector.startsWith('@keyframes')), contract.file);
+    const style = compiledStyle(source).replace(/\/\*[\s\S]*?\*\//g, '');
+    const selectors = [...style.matchAll(/([^{}]+)\{/g)].flatMap((match) =>
+      match[1].trim().startsWith('@keyframes') ? [] : match[1].split(',').map(s => s.trim()));
+    assert(!selectors.some((selector) => /\s/.test(selector)), contract.file);
   }
 });
 
-test('呼吸阶段同步驱动外环与呼吸核心', () => {
-  const template = templateSource(componentSource('breathing.ux'));
-
-  assert(attributesForClass(template, 'breath-halo').class.includes('{{ breathPhase }}'));
-  assert(attributesForClass(template, 'breath-orb').class.includes('{{ breathPhase }}'));
+test('节奏拳波纹从舞台中心向外扩散并逐渐消失', () => {
+  const source = componentSource('boxing.ux');
+  const layer = styleDeclarations(source, '.impact-layer');
+  assert.equal(layer.position, 'absolute');
+  assert.equal(layer.left, '0'); assert.equal(layer.top, '0');
+  assert.equal(layer.width, '100%'); assert.equal(layer.height, '100%');
+  assert.equal(layer['justify-content'], 'center'); assert.equal(layer['align-items'], 'center');
+  const base = styleDeclarations(source, '.impact-wave');
+  assert.equal(base.position, undefined, 'each fixed ring is centered by its own flex layer');
+  const names = ['one', 'two', 'three', 'four', 'five'];
+  assert.equal((templateSource(source).match(/class="impact-layer"/g) || []).length, names.length);
+  for (const viewport of ['regular', 'compact', 'short']) {
+    const short = viewport === 'short';
+    const stageSize = viewport === 'regular' ? 210 : short ? 110 : 190;
+    let previousSize = 0, previousDelay = -1;
+    for (const name of names) {
+      const style = {...base, ...(name === 'one' ? {} : styleDeclarations(source, '.impact-wave-' + name)),
+        ...(viewport === 'compact' && name === 'five' ? styleDeclarations(source, '.impact-wave-five.impact-wave-compact') : {}),
+        ...(short ? styleDeclarations(source, '.impact-wave-short') : {}),
+        ...(short && name !== 'one' ? styleDeclarations(source, '.impact-wave-' + name + '.impact-wave-short') : {})};
+      const size = parseFloat(style.width), delay = parseFloat(style['animation-delay'] || '0');
+      assert.equal(style.width, style.height, 'all rings are circular');
+      assert(size > previousSize && size + 2 * parseFloat(style['border-width']) <= stageSize - 2, 'fixed rings plus their borders stay inside each stage');
+      assert(delay > previousDelay, 'rings light up in radius order');
+      assert.equal(style.transform, undefined, 'mirror transform origin is unreliable');
+      previousSize = size; previousDelay = delay;
+    }
+  }
+  for (const name of ['impact-expand', 'beat-expand']) {
+    const frames = keyframeSource(source, name);
+    assert(!/\b(?:transform|width|height|left|top)\s*:/.test(frames), 'mirror geometry tweens drift; animate only opacity');
+    assert(/100%\s*\{[^}]*opacity:\s*0\b/.test(frames), 'rings fade after the radial pulse');
+  }
+  assert.notEqual(styleDeclarations(source, '.target-hit-wave')['animation-name'], styleDeclarations(source, '.target-active-wave')['animation-name'], 'hit restarts a distinct pulse');
 });
 
-test('呼吸球三层均由呼吸阶段驱动且文字不参与缩放', () => {
-  const template = templateSource(componentSource('breathing.ux'));
-  assert(attributesForClass(template, 'breath-halo').class.includes('{{ breathPhase }}'));
-  assert(attributesForClass(template, 'breath-orb').class.includes('{{ breathPhase }}'));
-  assert(attributesForClass(template, 'orb-core').class.includes('{{ breathPhase }}-core'));
-  assert(!attributesForClass(template, 'phase-label').class.includes('breathPhase'));
-});
-
-test('呼吸球首次吸气即可播放且动画时长与 4-2-4 / 4-2-6 节奏一致', () => {
-  const source = componentSource('breathing.ux');
-  const template = templateSource(source);
-
-  const halo = styleDeclarations(source, '.breath-halo');
-  assert(attributesForClass(template, 'breath-halo').class.includes('{{ breathRhythmClass }}'));
-  assert.strictEqual(halo['animation-name'], 'halo-breathe-standard');
-  assert.strictEqual(halo['animation-duration'], '10000ms');
-  assert.strictEqual(halo['animation-iteration-count'], 'infinite');
-  assert.strictEqual(styleDeclarations(source, '.breath-halo.rhythm-calming')['animation-name'], 'halo-breathe-calming');
-  assert.strictEqual(styleDeclarations(source, '.breath-halo.rhythm-calming')['animation-duration'], '12000ms');
-  for (const phase of ['inhale', 'hold', 'exhale']) {
-    assert.strictEqual(styleDeclarations(source, `.breath-halo.${phase}`)['animation-name'], undefined);
-  }
-
-  const orbAttributes = attributesForClass(template, 'breath-orb');
-  assert(orbAttributes.class.includes('{{ breathRhythmClass }}'));
-  for (const [phase, duration] of [['inhale', '4000ms'], ['hold', '2000ms'], ['exhale', '4000ms']]) {
-    const declarations = styleDeclarations(source, `.breath-orb.${phase}`);
-    assert.strictEqual(declarations['animation-duration'], duration);
-    assert.strictEqual(declarations['animation-iteration-count'], '1');
-  }
-  const calmingExhale = styleDeclarations(source, '.breath-orb.rhythm-calming.exhale');
-  assert.strictEqual(calmingExhale['animation-duration'], '6000ms');
-
-  assert(!styleDeclarations(source, '.breath-halo')['transition-property']);
-  assert(!styleDeclarations(source, '.breath-orb')['transition-property']);
-  assert(attributesForClass(template, 'orb-core').class.includes('{{ breathRhythmClass }}'));
-  for (const [phase, duration] of [['inhale-core', '4000ms'], ['hold-core', '2000ms'], ['exhale-core', '4000ms']]) {
-    const declarations = styleDeclarations(source, `.${phase}`);
-    assert.strictEqual(declarations['animation-duration'], duration);
-    assert.strictEqual(declarations['animation-iteration-count'], '1');
-  }
-  const calmingCoreExhale = styleDeclarations(source, '.exhale-core.rhythm-calming');
-  assert.strictEqual(calmingCoreExhale['animation-duration'], '6000ms');
-  assert.strictEqual(calmingCoreExhale['animation-iteration-count'], undefined);
-});
-
-test('稳态 60 使用青蓝玻璃且动画不推动文字', () => {
-  const source = componentSource('breathing.ux');
-  const template = templateSource(source);
-
-  assert.strictEqual(styleDeclarations(source, '.orb-shell')['background-color'], '#0d1630');
-  assert.strictEqual(styleDeclarations(source, '.breath-halo')['border-color'], '#247f96');
-  assert.strictEqual(styleDeclarations(source, '.breath-orb')['background-color'], undefined);
-  assert.strictEqual(styleDeclarations(source, '.orb-core')['background-color'], '#a5f3fc');
-  assert.strictEqual(styleDeclarations(source, '.phase-label').color, '#f8fafc');
-  assert(!attributesForClass(template, 'phase-label').class.includes('breathPhase'));
-  assert(!attributesForClass(template, 'remaining').class.includes('breathPhase'));
-});
-
-test('呼吸动画只缩放外层并始终围绕舞台中心运动', () => {
-  const source = componentSource('breathing.ux');
-  const shell = styleDeclarations(source, '.orb-shell');
-
-  assert.strictEqual(shell['justify-content'], 'center');
-  assert.strictEqual(shell['align-items'], 'center');
-  assert.strictEqual(styleDeclarations(source, '.breath-halo')['transform-origin'], 'center center');
-  assert(/\btransform\s*:/.test(keyframeSource(source, 'halo-breathe-standard')));
-  assert(/\btransform\s*:/.test(keyframeSource(source, 'halo-breathe-calming')));
-
-  for (const animationName of [
-    'orb-inhale', 'orb-hold', 'orb-exhale',
-    'core-breathe', 'core-hover', 'core-release',
-  ]) {
-    assert(!/\btransform\s*:/.test(keyframeSource(source, animationName)), `${animationName}:nested-scale`);
-  }
-
-  for (const phase of ['inhale', 'hold', 'exhale']) {
-    assert.strictEqual(styleDeclarations(source, `.breath-orb.${phase}`)['background-color'], undefined);
-  }
-});
-
-test('稳态呼吸在设备上具有清晰可见的收缩与明暗变化', () => {
-  const source = componentSource('breathing.ux');
-
-  for (const animationName of ['halo-breathe-standard', 'halo-breathe-calming']) {
-    const frames = keyframeSource(source, animationName);
-    const scales = [...frames.matchAll(/scale\((\d*\.?\d+)\)/g)].map((match) => Number(match[1]));
-    const opacities = [...frames.matchAll(/opacity\s*:\s*(\d*\.?\d+)/g)].map((match) => Number(match[1]));
-
-    assert(scales.length >= 2, `${animationName}:scale-frames`);
-    assert(opacities.length >= 2, `${animationName}:opacity-frames`);
-    assert(Math.max(...scales) - Math.min(...scales) >= 0.4, `${animationName}:visible-scale-range`);
-    assert(Math.max(...opacities) - Math.min(...opacities) >= 0.45, `${animationName}:visible-opacity-range`);
-  }
-});
-
-test('节奏拳使用可点击线框人物并绑定 B1 节拍状态', () => {
+test('节奏拳只接受动作传感器出拳并绑定 B1 节拍状态', () => {
   const source = componentSource('boxing.ux');
   const template = templateSource(source);
   const parent = fs.readFileSync(path.join(pageDirectory, 'index.ux'), 'utf8');
   const stage = attributesForClass(template, 'fighter-stage');
 
-  assert.strictEqual(stage.onclick, 'simulatePunch');
+  assert.strictEqual(stage.onclick, undefined);
+  assert(!template.includes('simulate-button'));
+  assert(!Object.hasOwn(componentDefinition(source), 'simulatePunch'));
+  assert(!attributesForTag(templateSource(parent), 'boxing-view')['onsimulate-punch']);
   assert(stage.class.includes('{{ boxingTargetClass }}'));
-  for (const part of [
-    'fighter-head', 'fighter-body', 'fighter-arm-left', 'fighter-arm-right',
-    'fighter-fist-left', 'fighter-fist-right', 'fighter-leg-left', 'fighter-leg-right',
-  ]) assert(template.includes(part), part);
+  assert.equal(attributesForTag(template, 'image').src, '{{ fighterFrameSrc }}');
   assert(template.includes('impact-wave-one'));
   assert(template.includes('impact-wave-two'));
-  assert.strictEqual(styleDeclarations(source, '.fighter-body')['background-color'], '#fb7185');
-  assert.strictEqual(styleDeclarations(source, '.target-active-fist-right')['background-color'], '#fbbf24');
-  assert.strictEqual(styleDeclarations(source, '.target-hit-arm-right')['background-color'], '#fb7185');
+  assert.strictEqual(styleDeclarations(source, '.target-active-wave')['border-color'], '#fbbf24');
   assert.strictEqual(styleDeclarations(source, '.combo-hot').color, '#fbbf24');
   assert(attributesForClass(template, 'boxing-streak-value').class.includes('{{ boxingComboClass }}'));
   assert(parent.includes("this.boxingComboClass = this.boxingStats.streak >= 5 ? 'combo-hot' : 'combo-calm'"));
 });
 
-test('节奏拳外壳与降级控件使用 B1 中性和玫红玻璃色', () => {
+test('节奏拳外壳使用 棱镜夜光石墨和紫罗兰色', () => {
   const source = componentSource('boxing.ux');
 
-  assert.strictEqual(styleDeclarations(source, '.boxing-remaining').color, '#f8fafc');
-  assert.strictEqual(styleDeclarations(source, '.boxing-stat-label').color, '#8d91bd');
-  assert.strictEqual(styleDeclarations(source, '.boxing-pace').color, '#8d91bd');
-  assert.strictEqual(styleDeclarations(source, '.boxing-message').color, '#fda4af');
-  assert.strictEqual(styleDeclarations(source, '.simulate-button')['border-color'], '#9d415b');
-  assert.strictEqual(styleDeclarations(source, '.simulate-button')['background-color'], '#2a142b');
-  assert.strictEqual(styleDeclarations(source, '.simulate-text').color, '#fda4af');
-  assert.strictEqual(styleDeclarations(source, '.stop-button')['border-color'], '#49345f');
-  assert.strictEqual(styleDeclarations(source, '.stop-button')['background-color'], '#18142f');
-  assert.strictEqual(styleDeclarations(source, '.stop-text').color, '#a7a9c7');
+  assert.strictEqual(styleDeclarations(source, '.boxing-remaining').color, '#f4f7fb');
+  assert.strictEqual(styleDeclarations(source, '.boxing-stat-label').color, '#a3b1c4');
+  assert.strictEqual(styleDeclarations(source, '.boxing-pace').color, '#a3b1c4');
+  assert.strictEqual(styleDeclarations(source, '.boxing-message').color, '#c4b5fd');
+  assert.strictEqual(styleDeclarations(componentSource('action-button.ux'), '.action')['border-color'], '#3b4959');
+  assert.strictEqual(styleDeclarations(componentSource('action-button.ux'), '.action')['background-color'], '#121922');
+  assert.strictEqual(styleDeclarations(componentSource('action-button.ux'), '.action-label').color, '#f4f7fb');
 });
 
-test('节奏拳人物以舞台中心为锚点并使用完整的蓄力出拳回位节奏', () => {
+test('动作提示预留固定高度避免退出按钮在连接失败后跳动', () => {
   const source = componentSource('boxing.ux');
-  const stage = styleDeclarations(source, '.fighter-stage');
-  const arm = styleDeclarations(source, '.fighter-arm');
-  const fist = styleDeclarations(source, '.fighter-fist');
-
-  assert.strictEqual(stage['justify-content'], 'center');
-  assert.strictEqual(stage['align-items'], 'center');
-  assert.strictEqual(styleDeclarations(source, '.fighter')['transform-origin'], 'center center');
-  assert.strictEqual(arm['transition-duration'], '280ms');
-  assert.strictEqual(arm['transition-timing-function'], 'ease-in-out');
-  assert.strictEqual(fist['transition-duration'], '280ms');
-  assert.strictEqual(fist['transition-timing-function'], 'ease-in-out');
-  assert.strictEqual(styleDeclarations(source, '.target-active-fighter')['animation-name'], 'fighter-ready');
-  assert.strictEqual(styleDeclarations(source, '.target-hit-fighter')['animation-duration'], '460ms');
+  const message = attributesForClass(templateSource(source), 'boxing-message');
+  assert.equal(message.if, undefined, 'message space stays mounted when empty');
+  assert.equal(styleDeclarations(source, '.boxing-message').height, '18px');
 });
 
 test('节奏拳人物层以整个圆屏为参照固定在屏幕中央', () => {
@@ -462,64 +423,23 @@ test('节奏拳人物层以整个圆屏为参照固定在屏幕中央', () => {
   assert.strictEqual(centerLayer.position, 'absolute');
   assert.strictEqual(centerLayer.left, '0');
   assert.strictEqual(centerLayer.top, '0');
-  assert.strictEqual(centerLayer.width, '100%');
-  assert.strictEqual(centerLayer.height, '100%');
+  // Percent-sized absolute children use the physical viewport on the 360 image.
+  // Keep the layer in the same design coordinate space as the application.
+  assert.strictEqual(centerLayer.width, '480px');
+  assert.strictEqual(centerLayer.height, '480px');
+  assert.strictEqual(attributesForClass(template, 'fighter-center-layer').style, 'height: {{ screenCanvasHeight }}px;');
+  const parent = fs.readFileSync(path.join(pageDirectory, 'index.ux'), 'utf8');
+  assert.strictEqual(attributesForTag(templateSource(parent), 'boxing-view')['screen-canvas-height'], '{{ screenCanvasHeight }}');
   assert.strictEqual(centerLayer['justify-content'], 'center');
   assert.strictEqual(centerLayer['align-items'], 'center');
   assert.strictEqual(styleDeclarations(source, '.fighter-stage')['margin-top'], '0');
 });
 
-test('节奏拳短视口使用实际像素尺寸并保持人物几何中心', () => {
-  const source = componentSource('boxing.ux');
-  const template = templateSource(source);
-  const fighter = styleDeclarations(source, '.fighter');
-  const shortFighter = styleDeclarations(source, '.fighter-short');
-  const shortAnchor = styleDeclarations(source, '.fighter-anchor-short');
-  const shortAnimations = [
-    ['.fighter.fighter-short', 'fighter-enter-short'],
-    ['.target-active-fighter.fighter-short', 'fighter-ready-short'],
-    ['.target-hit-fighter.fighter-short', 'fighter-strike-short'],
-    ['.target-missed-fighter.fighter-short', 'fighter-miss-short'],
-  ];
-
-  assert(template.includes('class="fighter-anchor fighter-anchor-{{ screenViewport }}"'));
-  assert.strictEqual(fighter.position, 'absolute');
-  assert.strictEqual(fighter.left, '0');
-  assert.strictEqual(fighter.top, '0');
-  assert.strictEqual(shortAnchor.width, '60px');
-  assert.strictEqual(shortAnchor.height, '95px');
-  assert.strictEqual(shortFighter.width, '60px');
-  assert.strictEqual(shortFighter.height, '95px');
-  assert.strictEqual(shortFighter.transform, 'scale(1)');
-  assert.strictEqual(styleDeclarations(source, '.fighter-head-short').width, '20px');
-  assert.strictEqual(styleDeclarations(source, '.fighter-body-short').height, '38px');
-
-  for (const [selector, animationName] of shortAnimations) {
-    const declarations = styleDeclarations(source, selector);
-    assert.strictEqual(declarations['animation-name'], animationName);
-    assert.strictEqual(declarations['animation-iteration-count'], '1');
-    const frames = [...keyframeSource(source, animationName).matchAll(/\d+%\s*\{([^}]*)\}/g)];
-    assert(frames.length > 0, `${animationName}:frames`);
-    for (const frame of frames) {
-      const properties = frame[1]
-        .split(';')
-        .map((declaration) => declaration.trim())
-        .filter(Boolean)
-        .map((declaration) => declaration.slice(0, declaration.indexOf(':')).trim());
-      assert(properties.every((property) => ['transform', 'opacity'].includes(property)), `${animationName}:properties`);
-      assert(/transform:[^;]*scale\(1\)/.test(frame[1]), `${animationName}:scale`);
-    }
-  }
-});
-
 test('节奏拳关键帧避开 AIoT 运行时不兼容的位移与旋转', () => {
   const source = componentSource('boxing.ux');
   const animationNames = [
-    'fighter-enter', 'fighter-enter-short',
-    'fighter-ready', 'fighter-ready-short',
-    'fighter-strike', 'fighter-strike-short',
-    'fighter-miss', 'fighter-miss-short',
     'impact-expand',
+    'beat-expand',
   ];
 
   for (const animationName of animationNames) {
@@ -541,9 +461,16 @@ test('首页中心舞台在圆屏短视口压缩到安全尺寸', () => {
   assert.strictEqual(orbit.height, '150px');
   assert.strictEqual(inner.width, '132px');
   assert.strictEqual(inner.height, '132px');
+  const classes = attributesForClass(templateSource(source), 'vital-orbit').class;
+  const expression = classes.match(/\{\{ ([\s\S]+?) \}\}/)[1];
+  const choose = Function('screenViewport', 'screenSize', `return ${expression}`);
+  assert.equal(choose('normal', 'compact'), 'compact');
+  assert.equal(choose('short', 'compact'), 'short');
+  assert.equal(choose('normal', 'regular'), 'regular');
+  assert(!compiledStyle(source).includes('.vital-orbit-compact.vital-orbit-short'));
 });
 
-test('结果页共享单次完成光环并使用对应 B1 能量色', () => {
+test('结果页共享单次完成光环并使用对应 棱镜夜光能量色', () => {
   const steady = componentSource('steady-result.ux');
   const boxingResult = componentSource('boxing-result.ux');
 
@@ -552,11 +479,156 @@ test('结果页共享单次完成光环并使用对应 B1 能量色', () => {
     assert(source.includes('@keyframes completion-enter'));
     assert.strictEqual(styleDeclarations(source, '.completion-halo')['animation-iteration-count'], '1');
   }
-  assert.strictEqual(styleDeclarations(steady, '.completion-halo')['border-color'], '#22d3ee');
-  assert.strictEqual(styleDeclarations(steady, '.result-row')['background-color'], '#11152e');
-  assert.strictEqual(styleDeclarations(boxingResult, '.completion-halo')['border-color'], '#fb7185');
-  assert.strictEqual(styleDeclarations(boxingResult, '.boxing-result-cell')['background-color'], '#18142f');
-  assert.strictEqual(styleDeclarations(boxingResult, '.coral').color, '#fda4af');
+  assert.strictEqual(styleDeclarations(steady, '.completion-halo')['border-color'], '#9bdcfa');
+  assert.strictEqual(styleDeclarations(steady, '.result-row')['background-color'], '#121922');
+  assert.strictEqual(styleDeclarations(boxingResult, '.completion-halo')['border-color'], '#ac96ed');
+  assert.strictEqual(styleDeclarations(boxingResult, '.boxing-result-cell')['background-color'], '#121922');
+  assert.strictEqual(styleDeclarations(boxingResult, '.coral').color, '#c4b5fd');
+});
+
+test('four digit boxing scores reserve a single line in normal and short viewports', () => {
+  const source = componentSource('boxing-result.ux');
+  const stage = styleDeclarations(source, '.completion-stage');
+  const score = styleDeclarations(source, '.boxing-result-score');
+  // 3000 wrapped and was clipped in the actual layout fixture. Reserve four
+  // full glyph widths; actual font shaping is additionally checked on-device.
+  for (const viewport of ['normal', 'short']) {
+    const font = viewport === 'short'
+      ? styleDeclarations(source, '.boxing-result-score-short')['font-size']
+      : score['font-size'];
+    assert(parseFloat(stage.width) >= 4 * parseFloat(font), `${viewport}: four digits fit`);
+  }
+  assert.equal(score.width, '100%');
+  assert.equal(score['text-align'], 'center');
+});
+
+test('native training images stay inside all three stage sizes without moving their labels', () => {
+  for (const [file, image, stage] of [['breathing.ux','.breath-art','.orb-shell'],['boxing.ux','.fighter','.fighter-stage']]) {
+    const source=componentSource(file);
+    for(const suffix of ['', '-compact', '-short']) {
+      const graphic={...styleDeclarations(source,image),...(suffix?styleDeclarations(source,image+suffix):{})};
+      const bounds={...styleDeclarations(source,stage),...(suffix?styleDeclarations(source,stage+suffix):{})};
+      assert(parseFloat(graphic.width)<=parseFloat(bounds.width),file+suffix+': image width');
+      assert(parseFloat(graphic.height)<=parseFloat(bounds.height),file+suffix+': image height');
+    }
+    assert(!templateSource(source).includes('<canvas'), 'unsupported runtime canvas must not reach the package');
+  }
+});
+
+test('all clock-selected images exist and punch artwork has transparent unclipped margins', () => {
+  const {PNG}=require('pngjs');
+  const visuals=require('../src/pages/index/training-visuals');
+  const steady=require('../src/pages/index/steady');
+  const files=new Set();
+  for(const pattern of Object.values(steady.PATTERNS)) {
+    const duration=pattern.inhaleMs+pattern.holdMs+pattern.exhaleMs;
+    for(let at=0;at<duration;at+=25)files.add(visuals.breathFrame(at,pattern));
+  }
+  for(const gender of ['male', 'female'])for(let at=0;at<1600;at+=50){files.add(visuals.fighterFrame(at,null,gender));files.add(visuals.fighterFrame(at,0,gender));}
+  for(const name of files) {
+    const image=PNG.sync.read(fs.readFileSync(path.join(__dirname,'../src',name)));
+    if(name.includes('/breath-')){assert.equal(image.width,250);assert.equal(image.height,250);continue;}
+    assert.equal(image.width,210);assert.equal(image.height,180);
+    for(let x=0;x<image.width;x++)for(const y of [0,image.height-1])assert.equal(image.data[(y*image.width+x)*4+3],0,name+': vertical clipping');
+    for(let y=0;y<image.height;y++)for(const x of [0,image.width-1])assert.equal(image.data[(y*image.width+x)*4+3],0,name+': horizontal clipping');
+  }
+});
+
+test('共享按钮在按下和取消时反馈，禁用及加载时不触发操作', () => {
+  const definition = componentDefinition(componentSource('action-button.ux'));
+  for (const disabled of [false, true]) for (const busy of [false, true]) {
+    const emitted = [];
+    const instance = { disabled, busy, pressed: false, $emit: e => emitted.push(e) };
+    definition.press.call(instance);
+    assert.equal(instance.pressed, !disabled && !busy);
+    definition.release.call(instance);
+    assert.equal(instance.pressed, false);
+    definition.press.call(instance);
+    definition.activate.call(instance);
+    assert.equal(instance.pressed, false);
+    assert.deepEqual(emitted, !disabled && !busy ? ['activate'] : []);
+  }
+  const template = templateSource(componentSource('action-button.ux'));
+  assert.equal(attributesForClass(template, 'action').ontouchcancel, 'release');
+  assert(template.includes("busy ? '处理中…' : label"));
+});
+
+test('共享控件和装饰的静态显示保留训练状态', () => {
+  for (const [file, selector, visible] of [
+    ['home.ux', '.still-pulse', false],
+    ['boxing.ux', '.still-wave', false], ['steady-result.ux', '.still-completion', false],
+    ['boxing-result.ux', '.still-completion', false],
+  ]) {
+    const source = componentSource(file);
+    const rule = styleDeclarations(source, selector);
+    assert.equal(rule['animation-duration'], '1ms');
+    const frames = keyframeSource(source, rule['animation-name']);
+    assert(!/\b(transform|width|height|left|top)\s*:/.test(frames));
+    const opacity = [...frames.matchAll(/opacity:\s*(\d+)/g)].map(m => +m[1]);
+    assert.deepEqual(opacity, visible ? [1, 1] : [0, 0]);
+    assert(templateSource(source).includes('{{ motionClass }}'));
+  }
+  assert(templateSource(componentSource('breathing.ux')).includes('{{ phaseLabel }}'));
+  assert(templateSource(componentSource('boxing.ux')).includes('{{ boxingPrompt }}'));
+  assert.equal(styleDeclarations(componentSource('action-button.ux'), '.action-still')['transition-duration'], '0ms');
+});
+
+test('圆屏操作区至少48设计像素，异步健康提示预留空间', () => {
+  const home = componentSource('home.ux');
+  assert.equal(attributesForClass(templateSource(home), 'health-message').if, undefined);
+  for (const [source, selectors] of [
+    [home, ['.mode-button', '.mode-button-short']],
+    [componentSource('breathing.ux'), ['.stop-button', '.stop-button-short']],
+    [componentSource('boxing.ux'), ['.boxing-stop', '.boxing-stop-short']],
+    [componentSource('steady-result.ux'), ['.primary-button', '.result-button-short']],
+    [componentSource('boxing-result.ux'), ['.primary-button', '.result-button-short']],
+  ]) for (const selector of selectors) assert(parseFloat(styleDeclarations(source, selector).height) >= 48, selector);
+  const orbit = styleDeclarations(home, '.vital-orbit-compact');
+  const pulse = styleDeclarations(home, '.orbit-pulse-compact');
+  assert(parseFloat(pulse.left) + parseFloat(pulse.width) + 2 * parseFloat(styleDeclarations(home, '.orbit-pulse')['border-width']) <= parseFloat(orbit.width));
+});
+
+test('所有正文色在石墨、模式和按下表面满足4.5比1对比度', () => {
+  const action = componentSource('action-button.ux');
+  const parent = fs.readFileSync(path.join(pageDirectory, 'index.ux'), 'utf8');
+  function luminance(hex) {
+    const rgb = hex.slice(1).match(/../g).map(v => parseInt(v, 16) / 255)
+      .map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+    return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+  }
+  const text = [styleDeclarations(action, '.action-label').color,
+    styleDeclarations(action, '.action-detail').color,
+    styleDeclarations(action, '.label-ice').color,
+    styleDeclarations(action, '.label-violet').color];
+  const backgrounds = [styleDeclarations(parent, '.app')['background-color'],
+    ...['.action', '.action-ice', '.action-violet', '.action-pressed'].map(s => styleDeclarations(action, s)['background-color'])];
+  for (const foreground of text) for (const background of backgrounds) {
+    const a = luminance(foreground), b = luminance(background);
+    const ratio = (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    assert(ratio >= 4.5, `${foreground} on ${background}: ${ratio.toFixed(2)}`);
+  }
+});
+
+test('Prism boxing result retains independent heart rate and stress rows', () => {
+  const template = templateSource(componentSource('boxing-result.ux'));
+  assert(template.includes('{{ boxingResultHeartRate }}'));
+  assert(template.includes('{{ boxingResultStress }}'));
+  assert.equal((template.match(/class="boxing-hr-result /g) || []).length, 2);
+});
+
+test('boxing missing-data explanations fit beside each health label', () => {
+  const source = componentSource('boxing-result.ux');
+  const quality = require('../src/pages/index/health-quality');
+  const text = '无法比较：' + quality.comparisonReason(null, null, 'heartRate', 0, 30000);
+  const row = styleDeclarations(source, '.boxing-hr-result');
+  const label = styleDeclarations(source, '.boxing-hr-label');
+  const value = styleDeclarations(source, '.boxing-hr-value');
+  const labels = [...templateSource(source).matchAll(/class="boxing-hr-label">([^<]+)<\/text>/g)].map(match => match[1]);
+  const innerWidth = parseFloat(row.width) - 2 * parseFloat(row.padding.split(' ')[1]) - 2;
+  for (const name of labels) {
+    const requiredWidth = name.length * parseFloat(label['font-size']) + text.length * parseFloat(value['font-size']);
+    assert(requiredWidth <= innerWidth, `${name}: missing-data explanation needs ${requiredWidth}px, only ${innerWidth}px available`);
+  }
 });
 
 console.log(`\n${passed} component contract tests passed`);

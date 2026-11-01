@@ -5,7 +5,7 @@ export function subscribeAccelerometer(onSample, onError) {
     sensor.subscribeAccelerometer({
       interval: 'game',
       callback: (sample) => {
-        onSample({ x: sample.x, y: sample.y, z: sample.z });
+        onSample(sample && { x: sample.x, y: sample.y, z: sample.z });
       },
       fail: (message, code) => {
         if (onError) onError({ message, code });
