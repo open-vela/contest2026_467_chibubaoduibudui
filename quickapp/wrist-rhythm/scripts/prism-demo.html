@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,"><title>腕上节律 · 实时演示</title>
+<style>
+:root{color-scheme:dark;--canvas:#080b10;--surface:#121922;--line:#3b4959;--text:#f4f7fb;--muted:#a3b1c4;--ice:#9bdcfa;--violet:#c4b5fd}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);color:var(--text);font:16px/1.6 "Microsoft YaHei",sans-serif}main{width:min(1080px,100%);margin:auto;padding:36px 28px}header{display:flex;gap:24px;align-items:center;justify-content:space-between;margin-bottom:36px}h1{margin:0;font-size:28px;letter-spacing:-.5px}p{margin:6px 0 0;color:var(--muted)}.status{font-size:14px;color:var(--ice)}.layout{display:grid;grid-template-columns:minmax(0,560px) minmax(260px,1fr);gap:44px;align-items:center}.dial{width:min(510px,100%);aspect-ratio:1;margin:auto;padding:10px;border-radius:50%;background:linear-gradient(135deg,#7b8b9f,#242d38 25%,#0b1018 52%,#59536f 80%,#212936);box-shadow:0 24px 60px #0007}.screen{display:block;width:100%;aspect-ratio:1;padding:0;border:0;overflow:hidden;border-radius:50%;background:var(--canvas);cursor:pointer;touch-action:manipulation;position:relative}.screen img{display:block;width:100%;height:100%;object-fit:contain;aspect-ratio:1}.screen[disabled]{cursor:wait}.placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);pointer-events:none}.placeholder[hidden]{display:none}h2{font-size:21px;margin:0 0 18px}ol{padding-left:24px;margin:0}li{padding-left:6px;margin:0 0 18px;color:var(--muted)}li strong{display:block;color:var(--text);font-size:17px;font-weight:600}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}button.control,a.control{min-height:48px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:10px 16px;color:var(--text);font:inherit;cursor:pointer;text-decoration:none;transition:background .14s,border-color .14s}.control:hover{background:#1a2430;border-color:#738497}.control:active{background:#344355}.control:disabled{opacity:.5;cursor:wait}button:focus-visible,a:focus-visible{outline:3px solid var(--ice);outline-offset:4px}.caption{text-align:center;font-size:13px;margin-top:18px}.note{font-size:13px;margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}.error{margin-top:18px;color:var(--violet);min-height:26px}.tap{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border:2px solid var(--ice);border-radius:50%;pointer-events:none;animation:tap .22s ease-out forwards}@keyframes tap{from{opacity:1;transform:scale(.7)}to{opacity:0;transform:scale(2.2)}}
+@media(max-width:800px){main{padding:24px 18px}header{align-items:flex-start;gap:14px;flex-direction:column;margin-bottom:24px}.layout{grid-template-columns:1fr;gap:28px}.dial{max-width:470px}h1{font-size:25px}.instructions{max-width:470px;margin:auto;width:100%}}@media(prefers-reduced-motion:reduce){*{transition:none!important}.tap{animation:none;opacity:0}}
+</style>
+</head>
+<body><main>
+<header><div><h1>腕上节律 · 棱镜夜光</h1><p>直接点击表盘，检查真实页面与操作反馈</p></div><div class="status" id="status" role="status">正在连接模拟器…</div></header>
+<div class="layout"><section aria-label="模拟器实时画面">
+<div class="dial"><button class="screen" id="screen" aria-label="实时手表界面，点击表盘按钮进行操作" disabled><img id="frame" alt="openvela 原生应用实时画面"><span class="placeholder" id="placeholder">正在加载表盘…</span></button></div>
+<p class="caption" id="device">保持原始比例的模拟器画面</p>
+</section><section class="instructions"><h2>检查这几个操作</h2>
+<ol><li><strong>稳态 60</strong>从首页进入呼吸训练，检查阶段文字、圆环和结束按钮。完整训练为 60 秒。</li><li><strong>节奏拳</strong>检查人物、节拍与提示，再查看 30 秒后的结果页。</li><li><strong>持续开启动效</strong>检查呼吸圆环的连续变化与节拍光环。应用不再显示动效开关。</li></ol>
+<div class="actions"><button class="control" id="restart" disabled>重启演示</button><a class="control" href="http://127.0.0.1:8201/preview.html" target="_blank" rel="noopener">查看前后对照</a></div>
+<p class="error" id="error" role="alert"></p>
+<p class="note">正在运行正式 Release 包。健康数值由模拟器提供，不能代表真人测量；动作传感器可能显示不可用。重启演示会结束当前训练并回到首页。</p>
+</section></div></main>
+<script>
+const screen=document.querySelector('#screen'),frame=document.querySelector('#frame'),status=document.querySelector('#status'),error=document.querySelector('#error'),restart=document.querySelector('#restart');
+let device=null,stream=null,pendingFrame=null,decoding=false,paintedFrames=0;
+async function request(url,data){const response=await fetch(url,{method:data?'POST':'GET',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined,cache:'no-store'});const result=await response.json();if(!response.ok)throw Error(result.error||'操作暂未完成');return result}
+async function paintLatest(){
+  if(decoding)return;
+  decoding=true;
+  try{
+    while(pendingFrame&&!document.hidden){
+      const source=pendingFrame;pendingFrame=null;
+      const image=new Image();image.src=source;await image.decode();
+      await new Promise(resolve=>requestAnimationFrame(()=>{frame.src=source;paintedFrames++;resolve()}));
+      document.querySelector('#placeholder').hidden=true;
+      if(device&&!restart.disabled)screen.disabled=false;
+      status.textContent=restart.disabled?'正在重启…':'已连接 · 可直接操作';
+    }
+  }catch(e){error.textContent='画面加载失败，正在等待下一帧'}finally{decoding=false}
+}
+function connectFrames(){
+  stream?.close();stream=new EventSource('/api/stream');
+  stream.addEventListener('frame',event=>{pendingFrame=event.data;paintLatest()});
+  stream.onerror=()=>{status.textContent='连接中断 · 正在重试';screen.disabled=true};
+}
+screen.addEventListener('click',async event=>{if(!device||event.detail===0)return;const rect=screen.getBoundingClientRect();const x=Math.min(device.width-1,Math.max(0,(event.clientX-rect.left)/rect.width*device.width));const y=Math.min(device.height-1,Math.max(0,(event.clientY-rect.top)/rect.height*device.height));const tap=document.createElement('span');tap.className='tap';tap.style.left=(event.clientX-rect.left)+'px';tap.style.top=(event.clientY-rect.top)+'px';screen.append(tap);setTimeout(()=>tap.remove(),250);try{await request('/api/tap',{x,y});error.textContent=''}catch(e){error.textContent=e.message}});
+restart.addEventListener('click',async()=>{restart.disabled=screen.disabled=true;restart.textContent='正在重启…';try{await request('/api/restart',{});error.textContent=''}catch(e){error.textContent=e.message}finally{restart.disabled=false;screen.disabled=!device;restart.textContent='重启演示'}});
+(async()=>{try{const state=await request('/api/status');device=state.device;document.querySelector('#device').textContent=device.width+' × '+device.height+' · 原生模拟器实时画面';await request('/api/activate',{});restart.disabled=false;connectFrames()}catch(e){error.textContent=e.message;status.textContent='模拟器未连接'}})();
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stream?.close();pendingFrame=null}else if(device){connectFrames()}});
+window.addEventListener('pagehide',()=>stream?.close());
+</script></body></html>

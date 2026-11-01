@@ -136,6 +136,19 @@ test('无效加速度样本不会产生出拳', () => {
   assert.strictEqual(detector.push(null, 100), false);
 });
 
+test('动作诊断区分阈值与防抖且观察器不改变识别结果', () => {
+  const decisions = [];
+  const detector = boxing.createPunchDetector({ onDecision: (d) => decisions.push(d) });
+  detector.push({x:0,y:0,z:9.8}, 0);
+  assert.strictEqual(detector.push({x:4.5,y:0,z:9.8}, 1000), true);
+  assert.strictEqual(detector.push({x:0,y:0,z:9.8}, 1070), false);
+  assert.strictEqual(detector.push({x:4.5,y:0,z:9.8}, 1400), true);
+  assert.deepStrictEqual(decisions.map(d=>[d.timestamp,d.accepted,d.reason]), [[1000,true,'action'],[1070,false,'cooldown'],[1400,true,'action']]);
+  const throwing = boxing.createPunchDetector({onDecision:()=>{throw Error('diagnostic sink unavailable');}});
+  throwing.push({x:0,y:0,z:9.8},0);
+  assert.strictEqual(throwing.push({x:5,y:0,z:9.8},1000),true);
+});
+
 test('出拳按与节拍的时间差评分', () => {
   assert.deepStrictEqual(boxing.scorePunch(1120, 1000), { points: 100, grade: 'perfect' });
   assert.deepStrictEqual(boxing.scorePunch(1250, 1000), { points: 70, grade: 'good' });
@@ -173,6 +186,7 @@ test('所有设备形态统一使用圆屏安全布局', () => {
   }), {
     size: 'regular',
     viewport: 'normal',
+    designHeight: 480,
     className: 'screen-round size-regular viewport-normal',
   });
   assert.deepStrictEqual(layout.resolveLayout({
@@ -182,6 +196,7 @@ test('所有设备形态统一使用圆屏安全布局', () => {
   }), {
     size: 'regular',
     viewport: 'normal',
+    designHeight: 480,
     className: 'screen-round size-regular viewport-normal',
   });
 });
@@ -208,6 +223,7 @@ test('设备信息缺失时回退到最安全的圆屏常规布局', () => {
   assert.deepStrictEqual(layout.resolveLayout(null), {
     size: 'regular',
     viewport: 'normal',
+    designHeight: 480,
     className: 'screen-round size-regular viewport-normal',
   });
 });
@@ -222,8 +238,16 @@ test('圆屏短视口压缩纵向布局并优先使用可用窗口尺寸', () =>
   }), {
     size: 'compact',
     viewport: 'short',
+    designHeight: 320,
     className: 'screen-round size-compact viewport-short',
   });
+});
+
+test('设计画布在360和466圆屏归一化，短窗口保留真实宽高比', () => {
+  for (const side of [360, 466, 480]) {
+    assert.equal(layout.resolveLayout({screenWidth:side,screenHeight:side}).designHeight, 480);
+  }
+  assert.equal(layout.resolveLayout({windowWidth:480,windowHeight:320}).designHeight, 320);
 });
 
 console.log(`\n${passed} tests passed`);

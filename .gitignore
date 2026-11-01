@@ -32,3 +32,17 @@ node_modules/
 .codex-debug/
 .superpowers/
 .worktrees/
+
+# Local build credentials and presentation/cache artifacts are never submitted.
+sign/
+*.pem
+*.key
+*.pfx
+*.ppt
+*.pptx
+*.docx
+*.mp4
+*.mov
+.playwright-cli/
+.workbuddy/
+output/

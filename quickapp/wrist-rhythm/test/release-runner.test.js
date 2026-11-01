@@ -113,4 +113,36 @@ test('工具链记录构建错误时发布失败，即使退出码为零', () =>
   assert.strictEqual(runner.hasReleaseFailure('✅ [toolkit]: build success'), false);
 });
 
+test('暂存构建只接收运行输入，不扫描历史录像、工作树和备份脚本', () => {
+  withTempDirectory((root) => {
+    for (const entry of ['src', 'sign', 'output', '.worktrees', 'tools', 'test', 'docs', '.codex-debug']) {
+      fs.mkdirSync(path.join(root, entry));
+    }
+    fs.writeFileSync(path.join(root, 'package.json'), '{}');
+    const inputs = runner.projectEntries(root);
+    assert.deepStrictEqual(inputs, ['package.json', 'sign', 'src']);
+  });
+});
+
+test('Debug 也通过隔离输入构建并只发布新的对应产物', () => {
+  withTempDirectory((root) => {
+    fs.mkdirSync(path.join(root, 'src'));
+    fs.mkdirSync(path.join(root, 'node_modules'));
+    fs.writeFileSync(path.join(root, 'src', 'manifest.json'), JSON.stringify({ package: 'test.app', versionName: '1.0.0' }));
+    fs.mkdirSync(path.join(root, 'output'));
+    fs.writeFileSync(path.join(root, 'output', 'old.js'), 'throw new Error("not a source")');
+    const artifact = runner.runDebug(root, {
+      runNativeRelease(stage, mode) {
+        assert.notEqual(stage, root);
+        assert.equal(mode, 'debug');
+        assert.equal(fs.existsSync(path.join(stage, 'output')), false);
+        fs.mkdirSync(path.join(stage, 'dist'));
+        fs.writeFileSync(path.join(stage, 'dist', 'test.app.debug.1.0.0.rpk'), 'new-debug');
+      },
+    });
+    assert.equal(fs.readFileSync(artifact, 'utf8'), 'new-debug');
+    assert.equal(fs.readFileSync(path.join(root, 'output', 'old.js'), 'utf8'), 'throw new Error("not a source")');
+  });
+});
+
 console.log(`\n${passed} release runner tests passed`);

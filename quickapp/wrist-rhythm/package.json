@@ -8,11 +8,11 @@
   },
   "scripts": {
     "start": "aiot server --watch --open-nuttx",
-    "build": "aiot build",
+    "build": "node scripts/release-runner.js --debug",
     "build:release": "node scripts/release-runner.js",
     "release": "npm run build:release",
     "watch": "aiot watch --open-nuttx",
-    "test:logic": "node test/steady.test.js && node test/runtime.test.js && node test/page-lifecycle.test.js && node test/component-contract.test.js && node test/release-runner.test.js && node ../../test/contest-compliance.test.js",
+    "test:logic": "node test/steady.test.js && node test/runtime.test.js && node test/page-lifecycle.test.js && node test/component-contract.test.js && node test/release-runner.test.js && node --test test/health-quality.test.js test/page-health.test.js test/fighter-profile.test.js test/review-tools.test.js test/fault-source.test.js test/prism-demo-stream.test.js && node ../../test/contest-compliance.test.js",
     "test": "npm run test:logic"
   },
   "devDependencies": {

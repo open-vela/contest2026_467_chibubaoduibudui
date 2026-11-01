@@ -1,8 +1,9 @@
+<import name="action-button" src="./action-button.ux"></import>
 <template>
   <div class="page boxing-result-page boxing-result-page-{{ screenSize }} boxing-result-page-{{ screenViewport }}">
     <text class="boxing-result-kicker">RHYTHM / COMPLETE</text>
     <div class="completion-stage completion-stage-{{ screenViewport }}">
-      <div class="completion-halo completion-halo-{{ screenViewport }}"></div>
+      <div class="completion-halo completion-halo-{{ screenViewport }} {{ motionClass === 'motion-reduced' ? 'still-completion' : '' }}"></div>
       <text class="boxing-result-score boxing-result-score-{{ screenViewport }}">{{ boxingResultScore }}</text>
     </div>
     <text class="boxing-result-score-label">本局得分</text>
@@ -19,35 +20,40 @@
     </div>
 
     <div class="boxing-hr-result boxing-hr-result-{{ screenViewport }}">
-      <text class="boxing-hr-label">心率变化</text>
+      <text class="boxing-hr-label">心率</text>
       <text class="boxing-hr-value">{{ boxingResultHeartRate }}</text>
     </div>
-    <div class="primary-button result-button result-button-{{ screenViewport }}" onclick="returnHome">
-      <text class="button-title">完成</text>
+    <div class="boxing-hr-result boxing-hr-result-{{ screenViewport }}">
+      <text class="boxing-hr-label">压力</text>
+      <text class="boxing-hr-value">{{ boxingResultStress }}</text>
+    </div>
+    <div class="primary-button result-button result-button-{{ screenViewport }}">
+      <action-button label="完成" kind="primary" tone="violet" motion-class="{{ motionClass }}" onactivate="returnHome"></action-button>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  onReady() { console.log('WRIST_VIEW ' + JSON.stringify({ view: 'boxingResult', timestamp: Date.now(), score: this.boxingResultScore, hits: this.boxingResultHits, maxStreak: this.boxingResultStreak })); },
   props: {
+    motionClass: { type: String, default: 'motion-full' },
     screenSize: { type: String, default: 'regular' },
     screenViewport: { type: String, default: 'normal' },
     boxingResultScore: { type: String, default: '0' },
     boxingResultHits: { type: String, default: '0 / 0' },
     boxingResultStreak: { type: String, default: '0' },
     boxingResultHeartRate: { type: String, default: '训练期间未取得数据' },
+    boxingResultStress: { type: String, default: '训练期间未取得数据' },
   },
   returnHome() { this.$emit('returnHome'); },
 };
 </script>
 
-<style>
+<style lang="scss">
+@use '../../../common/prism' as p;
 .page {
-  width: 100%;
-  height: 100%;
-  flex-direction: column;
-  align-items: center;
+  @include p.page;
 }
 
 .boxing-result-page {
@@ -57,12 +63,12 @@ export default {
 .boxing-result-kicker {
   font-size: 14px;
   letter-spacing: 2px;
-  color: #fda4af;
+  color: p.$violet;
 }
 
 .completion-stage {
   position: relative;
-  width: 160px;
+  width: 300px;
   height: 82px;
   margin-top: 1px;
   justify-content: center;
@@ -71,24 +77,26 @@ export default {
 
 .completion-halo {
   position: absolute;
-  left: 39px;
+  left: 109px;
   top: 0;
   width: 80px;
   height: 80px;
   border-width: 2px;
-  border-color: #fb7185;
+  border-color: p.$violet-bright;
   border-radius: 40px;
   opacity: 0;
   animation-name: completion-enter;
-  animation-duration: 620ms;
+  animation-duration: p.$reveal;
   animation-timing-function: ease-out;
   animation-iteration-count: 1;
 }
 
 .boxing-result-score {
+  width: 100%;
+  text-align: center;
   font-size: 68px;
   font-weight: 700;
-  color: #f8fafc;
+  color: p.$text;
 }
 
 @keyframes completion-enter {
@@ -98,7 +106,7 @@ export default {
 
 .boxing-result-score-label {
   font-size: 16px;
-  color: #8d91bd;
+  color: p.$muted;
 }
 
 .boxing-result-grid {
@@ -110,75 +118,55 @@ export default {
 }
 
 .boxing-result-cell {
+  @include p.panel;
   width: 158px;
   height: 74px;
-  border-width: 1px;
-  border-color: #49345f;
-  border-radius: 18px;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #18142f;
 }
 
 .boxing-result-value {
   font-size: 27px;
   font-weight: 700;
-  color: #f8fafc;
+  color: p.$text;
 }
 
 .boxing-result-label {
   font-size: 13px;
-  color: #8d91bd;
+  color: p.$muted;
 }
 
 .boxing-hr-result {
+  @include p.panel;
   width: 330px;
-  height: 52px;
-  margin-top: 10px;
-  padding: 0 18px;
-  border-width: 1px;
-  border-color: #49345f;
-  border-radius: 16px;
+  height: 36px;
+  margin-top: 6px;
+  padding: 0 12px;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  background-color: #18142f;
 }
 
 .boxing-hr-label {
-  font-size: 16px;
-  color: #8d91bd;
+  font-size: 14px;
+  color: p.$muted;
 }
 
 .boxing-hr-value {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
-  color: #f8fafc;
+  color: p.$text;
 }
 
 .coral {
-  color: #fda4af;
+  color: p.$violet;
 }
 
 .primary-button {
-  width: 272px;
-  height: 62px;
-  padding: 0 24px;
-  border-radius: 31px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  border-width: 1px;
-  border-color: #9d415b;
-  background-color: #2a142b;
+  @include p.action-slot(220px, 56px);
 }
 
-.button-title {
-  font-size: 23px;
-  font-weight: 700;
-  color: #fda4af;
-}
 
 .result-button {
   width: 220px;
@@ -202,7 +190,7 @@ export default {
 }
 
 .completion-halo-short {
-  left: 51px;
+  left: 121px;
   width: 56px;
   height: 56px;
   border-radius: 28px;
@@ -223,7 +211,8 @@ export default {
 }
 
 .result-button-short {
-  height: 44px;
+  height: p.$touch-height;
   margin-top: 8px;
 }
+@include p.still('.still-completion');
 </style>

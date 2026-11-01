@@ -43,6 +43,10 @@ function isComplete(clock, now) {
   return remainingMs(clock, now) === 0;
 }
 
+function completionTime(clock, now) {
+  return clock ? Math.min(now, clock.startedAt + clock.pausedMs + clock.durationMs) : now;
+}
+
 function shouldScheduleInterval(clock, now) {
   return Boolean(clock) && !isComplete(clock, now);
 }
@@ -61,6 +65,7 @@ module.exports = {
   remainingMs,
   remainingSeconds,
   isComplete,
+  completionTime,
   shouldScheduleInterval,
   nextBeatAfterResume,
 };
