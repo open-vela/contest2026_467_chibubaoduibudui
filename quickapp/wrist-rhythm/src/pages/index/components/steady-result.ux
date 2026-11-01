@@ -1,12 +1,13 @@
+<import name="action-button" src="./action-button.ux"></import>
 <template>
   <div class="page result-page result-page-{{ screenSize }} result-page-{{ screenViewport }}">
     <text class="result-kicker">SESSION / COMPLETE</text>
     <div class="completion-stage completion-stage-{{ screenViewport }}">
-      <div class="completion-halo completion-halo-{{ screenViewport }}"></div>
+      <div class="completion-halo completion-halo-{{ screenViewport }} {{ motionClass === 'motion-reduced' ? 'still-completion' : '' }}"></div>
       <div class="result-icon result-icon-{{ screenViewport }}"><text class="result-check result-check-{{ screenViewport }}">✓</text></div>
     </div>
     <text class="result-title result-title-{{ screenViewport }}">完成一次稳态</text>
-    <text class="result-subtitle">留意身体变化，不追求单次数值</text>
+    <text class="result-subtitle">单次数值变化不代表训练效果</text>
 
     <div class="result-row result-row-{{ screenViewport }}">
       <div class="result-name-wrap">
@@ -23,15 +24,17 @@
       <text class="result-delta {{ stressImproved ? 'delta-good' : 'delta-neutral' }}">{{ resultStressDelta }}</text>
     </div>
 
-    <div class="primary-button result-button result-button-{{ screenViewport }}" onclick="returnHome">
-      <text class="button-title">完成</text>
+    <div class="primary-button result-button result-button-{{ screenViewport }}">
+      <action-button label="完成" kind="primary" tone="ice" motion-class="{{ motionClass }}" onactivate="returnHome"></action-button>
     </div>
   </div>
 </template>
 
 <script>
 export default {
+  onReady() { console.log('WRIST_VIEW ' + JSON.stringify({ view: 'result', timestamp: Date.now(), heartRate: this.resultHeartRateDelta, stress: this.resultStressDelta })); },
   props: {
+    motionClass: { type: String, default: 'motion-full' },
     screenSize: { type: String, default: 'regular' },
     screenViewport: { type: String, default: 'normal' },
     resultHeartRateDetail: { type: String, default: '' },
@@ -45,12 +48,10 @@ export default {
 };
 </script>
 
-<style>
+<style lang="scss">
+@use '../../../common/prism' as p;
 .page {
-  width: 100%;
-  height: 100%;
-  flex-direction: column;
-  align-items: center;
+  @include p.page;
 }
 
 .result-page {
@@ -60,7 +61,7 @@ export default {
 .result-kicker {
   font-size: 11px;
   letter-spacing: 2px;
-  color: #67e8f9;
+  color: p.$ice;
 }
 
 .completion-stage {
@@ -79,11 +80,11 @@ export default {
   width: 90px;
   height: 90px;
   border-width: 2px;
-  border-color: #22d3ee;
+  border-color: p.$ice;
   border-radius: 45px;
   opacity: 0;
   animation-name: completion-enter;
-  animation-duration: 620ms;
+  animation-duration: p.$reveal;
   animation-timing-function: ease-out;
   animation-iteration-count: 1;
 }
@@ -92,11 +93,11 @@ export default {
   width: 76px;
   height: 76px;
   border-width: 1px;
-  border-color: #247f96;
+  border-color: p.$ice-line;
   border-radius: 38px;
   justify-content: center;
   align-items: center;
-  background-color: #102338;
+  background-color: p.$ice-surface;
 }
 
 @keyframes completion-enter {
@@ -107,34 +108,31 @@ export default {
 .result-check {
   font-size: 34px;
   font-weight: 700;
-  color: #67e8f9;
+  color: p.$ice;
 }
 
 .result-title {
   margin-top: 12px;
   font-size: 27px;
   font-weight: 700;
-  color: #f8fafc;
+  color: p.$text;
 }
 
 .result-subtitle {
   margin-top: 3px;
   font-size: 12px;
-  color: #8d91bd;
+  color: p.$muted;
 }
 
 .result-row {
+  @include p.panel;
   width: 338px;
   height: 66px;
   margin-top: 10px;
   padding: 8px 18px;
-  border-width: 1px;
-  border-color: #343a74;
-  border-radius: 18px;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  background-color: #11152e;
 }
 
 .result-name-wrap {
@@ -144,13 +142,13 @@ export default {
 .result-name {
   font-size: 17px;
   font-weight: 600;
-  color: #f8fafc;
+  color: p.$text;
 }
 
 .result-detail {
   margin-top: 2px;
   font-size: 12px;
-  color: #8d91bd;
+  color: p.$muted;
 }
 
 .result-delta {
@@ -159,31 +157,17 @@ export default {
 }
 
 .delta-good {
-  color: #67e8f9;
+  color: p.$ice;
 }
 
 .delta-neutral {
-  color: #a7a9c7;
+  color: p.$muted;
 }
 
 .primary-button {
-  width: 272px;
-  height: 62px;
-  padding: 0 24px;
-  border-radius: 31px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  border-width: 1px;
-  border-color: #247f96;
-  background-color: #102338;
+  @include p.action-slot(220px, 56px);
 }
 
-.button-title {
-  font-size: 23px;
-  font-weight: 700;
-  color: #a5f3fc;
-}
 
 .result-button {
   width: 220px;
@@ -233,7 +217,8 @@ export default {
 }
 
 .result-button-short {
-  height: 44px;
+  height: p.$touch-height;
   margin-top: 8px;
 }
+@include p.still('.still-completion');
 </style>

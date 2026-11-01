@@ -65,7 +65,7 @@ function createResourceController(options) {
       const onError = (error) => {
         if (healthEpochs[String(type)] !== epoch) return;
         healthState = subscriptions.markUnsubscribed(healthState, type);
-        if (visible && config.onHealthError) config.onHealthError(error);
+        if (visible && config.onHealthError) config.onHealthError(error, type);
       };
       try {
         config.subscribeHealth(type, onSample, onError);

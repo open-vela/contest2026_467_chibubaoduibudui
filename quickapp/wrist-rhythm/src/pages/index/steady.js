@@ -17,6 +17,7 @@ const PATTERNS = {
     exhaleMs: 6000,
   },
 };
+
 function isValidNumber(value) {
   return typeof value === 'number' && Number.isFinite(value);
 }
@@ -43,12 +44,10 @@ function recentAverage(values, start, count) {
 function shouldSuggest(heartRates, stresses) {
   const hr = Array.isArray(heartRates) ? heartRates : [];
   const stress = Array.isArray(stresses) ? stresses : [];
-  if (hr.length < 4 || stress.length < 4) return { suggest: false, reason: 'stable' };
-
   const recentHr = average(hr.slice(-4));
   const recentStress = average(stress.slice(-4));
-  if (recentStress >= 40) return { suggest: true, reason: 'stress_high' };
-  if (recentHr >= 110) return { suggest: true, reason: 'heart_rate_high' };
+  if (stress.length >= 4 && recentStress >= 40) return { suggest: true, reason: 'stress_high' };
+  if (hr.length >= 4 && recentHr >= 110) return { suggest: true, reason: 'heart_rate_high' };
 
   if (stress.length >= 8) {
     const previousStress = recentAverage(stress, stress.length - 8, 4);

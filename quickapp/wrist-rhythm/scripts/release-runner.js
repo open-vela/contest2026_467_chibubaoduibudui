@@ -6,10 +6,10 @@ const path = require('path');
 const RELEASE_ARGS = [
   'release',
   '--enable-jsc',
-  '--optimize-css-attr',
+  // 大赛镜像 20260717 不识别缩写 CSS 键（w / h / foS 等）；保持完整属性名。
   '--enable-image-png8',
   '--drop-console',
-  'true',
+  'false',
 ];
 
 function needsAsciiStaging(projectRoot) {
@@ -19,10 +19,8 @@ function needsAsciiStaging(projectRoot) {
 function projectEntries(projectRoot) {
   return fs.readdirSync(projectRoot, { withFileTypes: true })
     .filter((entry) => {
-      if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === 'build' || entry.name === 'dist') {
-        return false;
-      }
-      return entry.isFile() || entry.isDirectory();
+      if (entry.isDirectory()) return ['src', 'sign', 'config'].includes(entry.name);
+      return entry.isFile() && /^(package(-lock)?\.json|\.npmrc|README\.md|(?:babel|webpack|aiot|config)[\w.-]*\.(?:json|js))$/.test(entry.name);
     })
     .map((entry) => entry.name)
     .sort();
@@ -39,23 +37,23 @@ function findReleaseArtifact(distDirectory) {
   return artifact;
 }
 
-function expectedReleaseArtifact(projectRoot) {
+function expectedReleaseArtifact(projectRoot, mode = 'release') {
   const manifestPath = path.join(projectRoot, 'src', 'manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   if (!/^[A-Za-z0-9._-]+$/.test(manifest.package || '') || !/^[A-Za-z0-9._-]+$/.test(manifest.versionName || '')) {
     throw new Error(`Invalid release artifact name in ${manifestPath}`);
   }
-  return path.join(projectRoot, 'dist', `${manifest.package}.release.${manifest.versionName}.rpk`);
+  return path.join(projectRoot, 'dist', `${manifest.package}.${mode}.${manifest.versionName}.rpk`);
 }
 
-function prepareReleaseArtifact(projectRoot) {
-  const artifact = expectedReleaseArtifact(projectRoot);
+function prepareReleaseArtifact(projectRoot, mode = 'release') {
+  const artifact = expectedReleaseArtifact(projectRoot, mode);
   fs.rmSync(artifact, { force: true });
   return artifact;
 }
 
-function findExpectedReleaseArtifact(projectRoot) {
-  const artifact = expectedReleaseArtifact(projectRoot);
+function findExpectedReleaseArtifact(projectRoot, mode = 'release') {
+  const artifact = expectedReleaseArtifact(projectRoot, mode);
   if (!fs.existsSync(artifact) || fs.statSync(artifact).size === 0) {
     throw new Error('AIoT release did not produce a non-empty expected release RPK');
   }
@@ -78,15 +76,18 @@ function copyProjectInputs(projectRoot, stageProject) {
   fs.symlinkSync(nodeModules, path.join(stageProject, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
 }
 
-function runNativeRelease(projectRoot) {
+function runNativeRelease(projectRoot, mode = 'release') {
   const aiotBin = path.join(projectRoot, 'node_modules', 'aiot-toolkit', 'lib', 'bin.js');
   if (!fs.existsSync(aiotBin)) {
     throw new Error(`AIoT toolkit binary not found: ${aiotBin}`);
   }
-  console.log(`> aiot ${RELEASE_ARGS.join(' ')}`);
-  const result = childProcess.spawnSync(process.execPath, [aiotBin, ...RELEASE_ARGS], {
+  const args = mode === 'debug' ? ['build'] : RELEASE_ARGS;
+  console.log(`> aiot ${args.join(' ')}`);
+  const result = childProcess.spawnSync(process.execPath, [aiotBin, ...args], {
     cwd: projectRoot,
     encoding: 'utf8',
+    timeout: 180000,
+    maxBuffer: 8 * 1024 * 1024,
   });
   const output = `${result.stdout || ''}${result.stderr || ''}`;
   process.stdout.write(output);
@@ -123,7 +124,7 @@ function publishReleaseArtifact(source, destination) {
   }
 }
 
-function runRelease(projectRoot = process.cwd(), overrides = {}) {
+function runBuild(projectRoot, overrides, mode) {
   const resolvedRoot = path.resolve(projectRoot);
   const operations = {
     copyProjectInputs,
@@ -131,29 +132,33 @@ function runRelease(projectRoot = process.cwd(), overrides = {}) {
     runNativeRelease,
     ...overrides,
   };
-  const destination = prepareReleaseArtifact(resolvedRoot);
-  if (!needsAsciiStaging(resolvedRoot)) {
-    operations.runNativeRelease(resolvedRoot);
-    return findExpectedReleaseArtifact(resolvedRoot);
-  }
+  const destination = prepareReleaseArtifact(resolvedRoot, mode);
 
   const stageRoot = operations.createStageRoot();
   const stageProject = path.join(stageRoot, 'project');
   try {
     operations.copyProjectInputs(resolvedRoot, stageProject);
-    prepareReleaseArtifact(stageProject);
-    operations.runNativeRelease(stageProject);
-    const artifact = findExpectedReleaseArtifact(stageProject);
+    prepareReleaseArtifact(stageProject, mode);
+    operations.runNativeRelease(stageProject, mode);
+    const artifact = findExpectedReleaseArtifact(stageProject, mode);
     return publishReleaseArtifact(artifact, destination);
   } finally {
     fs.rmSync(stageRoot, { recursive: true, force: true });
   }
 }
 
+function runRelease(projectRoot = process.cwd(), overrides = {}) {
+  return runBuild(projectRoot, overrides, 'release');
+}
+
+function runDebug(projectRoot = process.cwd(), overrides = {}) {
+  return runBuild(projectRoot, overrides, 'debug');
+}
+
 if (require.main === module) {
   try {
-    const artifact = runRelease();
-    console.log(`Release RPK: ${artifact}`);
+    const artifact = process.argv.includes('--debug') ? runDebug() : runRelease();
+    console.log(`Built RPK: ${artifact}`);
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;
@@ -170,4 +175,5 @@ module.exports = {
   publishReleaseArtifact,
   projectEntries,
   runRelease,
+  runDebug,
 };

@@ -25,6 +25,7 @@ function resolveLayout(info) {
   return {
     size,
     viewport,
+    designHeight: Math.round(480 * height / width),
     className: `screen-round size-${size} viewport-${viewport}`,
   };
 }

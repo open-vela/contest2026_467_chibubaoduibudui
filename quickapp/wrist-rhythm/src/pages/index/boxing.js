@@ -26,6 +26,8 @@ function createPunchDetector(options) {
   let lastPunchAt = -Infinity;
 
   return {
+    // 只重建姿态基线，保留上次动作时间，避免恢复绕过防抖。
+    resetBaseline() { previous = null; },
     push(sample, timestamp) {
       if (!validSample(sample) || !finite(timestamp)) return false;
       if (!previous) {
@@ -34,7 +36,13 @@ function createPunchDetector(options) {
       }
       const movement = vectorDelta(previous, sample);
       previous = sample;
-      if (movement < threshold || timestamp - lastPunchAt < cooldownMs) return false;
+      if (movement < threshold) return false;
+      const accepted = timestamp - lastPunchAt >= cooldownMs;
+      // Best-effort diagnostics must never affect detection or scoring.
+      if (typeof config.onDecision === 'function') {
+        try { config.onDecision({ timestamp, movement, accepted, reason: accepted ? 'action' : 'cooldown' }); } catch (_) {}
+      }
+      if (!accepted) return false;
       lastPunchAt = timestamp;
       return true;
     },
@@ -85,6 +93,7 @@ function recordMiss(stats) {
 module.exports = {
   GAME_MS,
   HIT_WINDOW_MS,
+  validSample,
   createPunchDetector,
   scorePunch,
   beatIntervalForHeartRate,
